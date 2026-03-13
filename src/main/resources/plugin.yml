@@ -1,0 +1,21 @@
+name: DoubleDoors
+version: 1.0.0
+main: szabee13.doubledoors.DoubleDoors
+api-version: '1.21'
+author: SzaBee13
+description: Opens connected doors simultaneously, like the Double Doors mod.
+softdepend: [LuckPerms, GriefPrevention, Geyser-Spigot, floodgate]
+commands:
+  doubledoors:
+    description: Main DoubleDoors command
+    usage: /doubledoors <reload|toggle>
+permissions:
+  doubledoors.use:
+    description: Allows using DoubleDoors linked opening behavior
+    default: true
+  doubledoors.reload:
+    description: Allows reloading the config
+    default: op
+  doubledoors.toggle:
+    description: Allows toggling double door behavior per player
+    default: true

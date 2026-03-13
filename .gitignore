@@ -1,0 +1,18 @@
+# Build
+target/
+dist/
+build/
+
+# IDEs
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+
+# Logs 
+logs/
+*.log
+
+# Release Files
+releases/

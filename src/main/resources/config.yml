@@ -1,0 +1,14 @@
+# Whether to enable the recursive opening feature
+enableRecursiveOpening: true
+
+# Maximum block distance for recursive search (1-32)
+recursiveOpeningMaxBlocksDistance: 10
+
+# Whether double doors are enabled
+enableDoors: true
+
+# Whether double fence gates are enabled
+enableFenceGates: true
+
+# Whether double trapdoors are enabled
+enableTrapdoors: true

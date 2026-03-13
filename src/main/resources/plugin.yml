@@ -1,5 +1,5 @@
 name: DoubleDoors
-version: 1.0.0
+version: 1.0.1
 main: szabee13.doubledoors.DoubleDoors
 api-version: '1.21'
 author: SzaBee13
@@ -8,7 +8,7 @@ softdepend: [LuckPerms, GriefPrevention, Geyser-Spigot, floodgate]
 commands:
   doubledoors:
     description: Main DoubleDoors command
-    usage: /doubledoors <reload|toggle>
+    usage: /doubledoors <reload|toggle|server-toggle>
 permissions:
   doubledoors.use:
     description: Allows using DoubleDoors linked opening behavior
@@ -19,3 +19,6 @@ permissions:
   doubledoors.toggle:
     description: Allows toggling double door behavior per player
     default: true
+  doubledoors.server-toggle:
+    description: Allows toggling DoubleDoors server-wide behavior
+    default: op

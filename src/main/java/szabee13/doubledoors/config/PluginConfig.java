@@ -13,6 +13,7 @@ public final class PluginConfig {
   private boolean enableDoors;
   private boolean enableFenceGates;
   private boolean enableTrapdoors;
+  private boolean serverWideEnabled;
 
   /**
    * Creates and loads a plugin config wrapper.
@@ -40,6 +41,7 @@ public final class PluginConfig {
     enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
     enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
     enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
+    serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
   }
 
   /**
@@ -85,5 +87,25 @@ public final class PluginConfig {
    */
   public boolean isEnableTrapdoors() {
     return enableTrapdoors;
+  }
+
+  /**
+   * Gets whether linked opening is enabled globally for the server.
+   *
+   * @return true when server-wide behavior is enabled
+   */
+  public boolean isServerWideEnabled() {
+    return serverWideEnabled;
+  }
+
+  /**
+   * Sets and persists whether linked opening is enabled globally for the server.
+   *
+   * @param enabled true to enable globally, false to disable globally
+   */
+  public void setServerWideEnabled(boolean enabled) {
+    serverWideEnabled = enabled;
+    plugin.getConfig().set("serverWideEnabled", enabled);
+    plugin.saveConfig();
   }
 }

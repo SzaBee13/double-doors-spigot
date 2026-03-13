@@ -3,9 +3,13 @@ package szabee13.doubledoors.listeners;
 import szabee13.doubledoors.DoubleDoors;
 import szabee13.doubledoors.config.PluginConfig;
 import szabee13.doubledoors.util.DoorUtil;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
@@ -43,18 +47,39 @@ public final class RedstoneListener implements Listener {
     int oldCurrent = event.getOldCurrent();
     int newCurrent = event.getNewCurrent();
     boolean wasPowered = oldCurrent > 0;
-    boolean isPowered = newCurrent > 0;
-    if (wasPowered == isPowered) {
+    boolean nowPowered = newCurrent > 0;
+    if (wasPowered == nowPowered) {
       return;
     }
 
-    Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
-    if (!isEnabledType(block.getType(), config)) {
+    if (!config.isServerWideEnabled()) {
       return;
     }
 
-    applyConnectedState(block, config, isPowered);
+    Block source = event.getBlock();
+
+    Set<Block> candidates = new HashSet<>();
+    if (isEnabledType(source.getType(), config)) {
+      candidates.add(source);
+    }
+
+    // Some redstone changes are reported on the source block (for example a lever)
+    // rather than directly on the openable, so inspect immediate neighbors too.
+    for (BlockFace face : BlockFace.values()) {
+      if (!face.isCartesian()) {
+        continue;
+      }
+
+      Block neighbor = source.getRelative(face);
+      if (isEnabledType(neighbor.getType(), config)) {
+        candidates.add(neighbor);
+      }
+    }
+
+    for (Block candidate : candidates) {
+      applyConnectedState(candidate, config, true);
+    }
   }
 
   /**
@@ -71,11 +96,14 @@ public final class RedstoneListener implements Listener {
 
     Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
+    if (!config.isServerWideEnabled()) {
+      return;
+    }
     if (!isEnabledType(block.getType(), config)) {
       return;
     }
 
-    applyConnectedState(block, config, null);
+    applyConnectedState(block, config, false);
   }
 
   /**
@@ -92,52 +120,85 @@ public final class RedstoneListener implements Listener {
 
     Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
+    if (!config.isServerWideEnabled()) {
+      return;
+    }
     if (!isEnabledType(block.getType(), config)) {
       return;
     }
 
-    applyConnectedState(block, config, null);
+    applyConnectedState(block, config, false);
   }
 
-  private void applyConnectedState(Block origin, PluginConfig config, Boolean explicitOpenState) {
+  private void applyConnectedState(Block origin, PluginConfig config, boolean requireOriginStateChange) {
     if (!config.isEnableRecursiveOpening()) {
       return;
     }
 
-    BlockData originData = origin.getBlockData();
-    if (!(originData instanceof Openable openable)) {
+    BlockData beforeData = origin.getBlockData();
+    if (!(beforeData instanceof Openable beforeOpenable)) {
       return;
     }
+    boolean beforeState = beforeOpenable.isOpen();
 
-    boolean openState = explicitOpenState != null ? explicitOpenState : !openable.isOpen();
-
-    if (originData instanceof Door) {
-      Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
-      if (partner == null) {
+    // Read and mirror state next tick so we sync to vanilla's final result.
+    plugin.getServer().getScheduler().runTask(plugin, () -> {
+      BlockData originData = origin.getBlockData();
+      if (!(originData instanceof Openable openable)) {
         return;
       }
 
-      BlockData partnerData = partner.getBlockData();
-      if (!(partnerData instanceof Openable linked)) {
+      boolean openState = openable.isOpen();
+      if (requireOriginStateChange && beforeState == openState) {
         return;
       }
 
-      linked.setOpen(openState);
-      partner.setBlockData(linked, false);
-      return;
-    }
+      if (originData instanceof Door) {
+        Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
+        if (partner == null) {
+          return;
+        }
 
-    Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
+        BlockData partnerData = partner.getBlockData();
+        if (!(partnerData instanceof Openable linked)) {
+          return;
+        }
 
-    for (Block block : connected) {
-      BlockData data = block.getBlockData();
-      if (!(data instanceof Openable linked)) {
-        continue;
+        linked.setOpen(openState);
+        partner.setBlockData(linked, false);
+
+        // Keep the upper half of the partner door in sync too.
+        Block partnerTop = partner.getRelative(BlockFace.UP);
+        BlockData topData = partnerTop.getBlockData();
+        if (topData instanceof Openable topOpenable) {
+          topOpenable.setOpen(openState);
+          partnerTop.setBlockData(topData, false);
+        }
+        return;
       }
 
-      linked.setOpen(openState);
-      block.setBlockData(linked, false);
-    }
+      Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
+      if (connected.isEmpty()) {
+        return;
+      }
+
+      // Snapshot first to avoid any ordering effects while mutating a connected component.
+      Map<Block, BlockData> snapshot = new HashMap<>();
+      for (Block block : connected) {
+        snapshot.put(block, block.getBlockData());
+      }
+
+      for (Map.Entry<Block, BlockData> entry : snapshot.entrySet()) {
+        Block block = entry.getKey();
+        BlockData data = entry.getValue();
+        if (!(data instanceof Openable linked)) {
+          continue;
+        }
+
+        linked.setOpen(openState);
+        block.setBlockData(linked, false);
+      }
+    });
   }
 
   private boolean isEnabledType(Material material, PluginConfig config) {

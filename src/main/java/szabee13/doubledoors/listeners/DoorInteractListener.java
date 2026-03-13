@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
@@ -60,6 +61,10 @@ public final class DoorInteractListener implements Listener {
     Player player = event.getPlayer();
     PluginConfig config = plugin.getPluginConfig();
 
+    if (!config.isServerWideEnabled()) {
+      return;
+    }
+
     if (!plugin.isEnabledForPlayer(player)) {
       return;
     }
@@ -83,45 +88,62 @@ public final class DoorInteractListener implements Listener {
     if (!config.isEnableRecursiveOpening()) {
       return;
     }
-
-    BlockData originData = origin.getBlockData();
-    if (!(originData instanceof Openable openable)) {
+    if (!(origin.getBlockData() instanceof Openable)) {
       return;
     }
 
-    // A right-click toggles the origin, so sync the partner to the post-click state.
-    boolean openState = !openable.isOpen();
-
-    if (originData instanceof Door) {
-      Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
-      if (partner == null) {
+    // Schedule for the next tick so we read the state AFTER vanilla has processed the
+    // click. Reading it here (at MONITOR) would give the pre-click state on Paper 1.21,
+    // causing the partner/connected blocks to be set to the wrong state.
+    plugin.getServer().getScheduler().runTask(plugin, () -> {
+      BlockData originData = origin.getBlockData();
+      if (!(originData instanceof Openable openable)) {
         return;
       }
 
-      BlockData partnerData = partner.getBlockData();
-      if (!(partnerData instanceof Openable linked)) {
+      boolean openState = openable.isOpen();
+
+      if (originData instanceof Door) {
+        Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
+        if (partner == null) {
+          return;
+        }
+
+        BlockData partnerData = partner.getBlockData();
+        if (!(partnerData instanceof Openable linked)) {
+          return;
+        }
+        if (!plugin.canOpenLinkedDoor(player, partner)) {
+          return;
+        }
+
+        linked.setOpen(openState);
+        partner.setBlockData(linked, false);
+
+        // Doors are two blocks tall — update the upper half explicitly so both
+        // halves stay in sync (setBlockData with applyPhysics=false does not
+        // automatically propagate the open state to the adjacent half).
+        Block partnerTop = partner.getRelative(BlockFace.UP);
+        BlockData topData = partnerTop.getBlockData();
+        if (topData instanceof Openable topOpenable) {
+          topOpenable.setOpen(openState);
+          partnerTop.setBlockData(topData, false);
+        }
         return;
       }
-      if (!plugin.canOpenLinkedDoor(player, partner)) {
-        return;
+
+      Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
+
+      for (Block block : connected) {
+        BlockData data = block.getBlockData();
+        if (!(data instanceof Openable linked)) {
+          continue;
+        }
+
+        linked.setOpen(openState);
+        block.setBlockData(linked, false);
       }
-
-      linked.setOpen(openState);
-      partner.setBlockData(linked, false);
-      return;
-    }
-
-    Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
-
-    for (Block block : connected) {
-      BlockData data = block.getBlockData();
-      if (!(data instanceof Openable linked)) {
-        continue;
-      }
-
-      linked.setOpen(openState);
-      block.setBlockData(linked, false);
-    }
+    });
   }
 
   private boolean isEnabledType(Material material, PluginConfig config) {

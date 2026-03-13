@@ -112,7 +112,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     if (args.length == 0) {
-      sender.sendMessage("Usage: /doubledoors <reload|toggle>");
+      sender.sendMessage("Usage: /doubledoors <reload|toggle|server-toggle>");
       return true;
     }
 
@@ -144,7 +144,21 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return true;
     }
 
-    sender.sendMessage("Usage: /doubledoors <reload|toggle>");
+    if (args[0].equalsIgnoreCase("server-toggle")) {
+      if (!sender.hasPermission("doubledoors.server-toggle")) {
+        sender.sendMessage("You do not have permission to use this command.");
+        return true;
+      }
+
+      boolean nextState = !pluginConfig.isServerWideEnabled();
+      pluginConfig.setServerWideEnabled(nextState);
+      sender.sendMessage(nextState
+          ? "DoubleDoors server-wide behavior enabled."
+          : "DoubleDoors server-wide behavior disabled.");
+      return true;
+    }
+
+    sender.sendMessage("Usage: /doubledoors <reload|toggle|server-toggle>");
     return true;
   }
 
@@ -161,6 +175,9 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       }
       if ("toggle".startsWith(args[0].toLowerCase())) {
         completions.add("toggle");
+      }
+      if ("server-toggle".startsWith(args[0].toLowerCase())) {
+        completions.add("server-toggle");
       }
     }
     return completions;

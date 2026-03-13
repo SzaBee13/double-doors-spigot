@@ -114,7 +114,7 @@ public final class DoorUtil {
       return null;
     }
 
-    if (doorData.getHalf() == Bisected.Half.LOWER) {
+    if (doorData.getHalf() == Bisected.Half.BOTTOM) {
       return block;
     }
 
@@ -122,7 +122,7 @@ public final class DoorUtil {
     if (!(lower.getBlockData() instanceof Door lowerDoor)) {
       return null;
     }
-    return lowerDoor.getHalf() == Bisected.Half.LOWER ? lower : null;
+    return lowerDoor.getHalf() == Bisected.Half.BOTTOM ? lower : null;
   }
 
   private static BlockFace leftOf(BlockFace facing) {

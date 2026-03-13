@@ -12,3 +12,6 @@ enableFenceGates: true
 
 # Whether double trapdoors are enabled
 enableTrapdoors: true
+
+# Global on/off switch for all DoubleDoors behavior on this server
+serverWideEnabled: true

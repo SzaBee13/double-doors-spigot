@@ -42,12 +42,14 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 - `/doubledoors reload` - reload config
 - `/doubledoors toggle` - toggle behavior for yourself
+- `/doubledoors server-toggle` - toggle behavior server-wide
 
 ## Permissions
 
 - `doubledoors.use` (default: `true`)
 - `doubledoors.toggle` (default: `true`)
 - `doubledoors.reload` (default: `op`)
+- `doubledoors.server-toggle` (default: `op`)
 
 ## Config
 
@@ -58,6 +60,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - `enableDoors` (default: `true`)
 - `enableFenceGates` (default: `true`)
 - `enableTrapdoors` (default: `true`)
+- `serverWideEnabled` (default: `true`)
 
 ## Build
 

@@ -1,9 +1,9 @@
 # DoubleDoors
 
-![GitHub Release](https://img.shields.io/github/v/release/SzaBee13/double-doors-spigot)
-![GitHub License](https://img.shields.io/github/license/SzaBee13/double-doors-spigot)
-![GitHub Issues](https://img.shields.io/github/issues/SzaBee13/double-doors-spigot)
-![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/double-doors-server)
+[![GitHub Release](https://img.shields.io/github/v/release/SzaBee13/double-doors-spigot)](https://github.com/SzaBee13/double-doors-spigot/releases)
+[![GitHub License](https://img.shields.io/github/license/SzaBee13/double-doors-spigot)](https://github.com/SzaBee13/double-doors-spigot/blob/main/LICENSE)
+[![GitHub Issues](https://img.shields.io/github/issues/SzaBee13/double-doors-spigot)](https://github.com/SzaBee13/double-doors-spigot/issues)
+[![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/double-doors-server)](https://modrinth.com/plugin/double-doors-server)
 
 A Bukkit/Spigot plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
 

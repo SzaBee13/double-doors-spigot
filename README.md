@@ -1,4 +1,4 @@
-# DoubleDoors
+# Double Doors
 
 [![GitHub Release](https://img.shields.io/github/v/release/SzaBee13/double-doors-spigot)](https://github.com/SzaBee13/double-doors-spigot/releases)
 [![GitHub License](https://img.shields.io/github/license/SzaBee13/double-doors-spigot)](https://github.com/SzaBee13/double-doors-spigot/blob/main/LICENSE)

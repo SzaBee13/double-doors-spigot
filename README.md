@@ -79,5 +79,5 @@ Output jar is generated under `target/`.
 
 ## License
 
-Licensed under the GNU Lesser General Public License v3.0.
+Licensed under the GNU General Public License v3.0.
 See `LICENSE`.

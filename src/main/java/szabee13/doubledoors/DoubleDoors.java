@@ -1,13 +1,12 @@
 package szabee13.doubledoors;
 
+import szabee13.doubledoors.config.PlayerPreferences;
 import szabee13.doubledoors.config.PluginConfig;
 import szabee13.doubledoors.listeners.DoorInteractListener;
 import szabee13.doubledoors.listeners.RedstoneListener;
 import szabee13.doubledoors.util.ProtectionCompat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -23,7 +22,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
   private PluginConfig pluginConfig;
-  private final Set<UUID> disabledPlayers = new HashSet<>();
+  private PlayerPreferences playerPreferences;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -32,6 +31,15 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
    */
   public PluginConfig getPluginConfig() {
     return pluginConfig;
+  }
+
+  /**
+   * Gets the per-player preferences manager.
+   *
+   * @return the player preferences instance
+   */
+  public PlayerPreferences getPlayerPreferences() {
+    return playerPreferences;
   }
 
   /**
@@ -47,36 +55,20 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   }
 
   /**
-   * Checks whether double-door logic is enabled for a given player.
+   * Checks whether double-door logic is globally enabled for a given player.
    *
    * @param player the player to check
    * @return true if behavior is enabled for the player
    */
   public boolean isEnabledForPlayer(Player player) {
-    return !disabledPlayers.contains(player.getUniqueId());
-  }
-
-  /**
-   * Toggles double-door behavior for the given player.
-   *
-   * @param player the player to toggle
-   * @return true if now enabled, false if now disabled
-   */
-  public boolean toggleForPlayer(Player player) {
-    UUID id = player.getUniqueId();
-    if (disabledPlayers.contains(id)) {
-      disabledPlayers.remove(id);
-      return true;
-    }
-
-    disabledPlayers.add(id);
-    return false;
+    return playerPreferences.isEnabled(player.getUniqueId());
   }
 
   @Override
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+    playerPreferences = new PlayerPreferences(this);
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
@@ -102,6 +94,9 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onDisable() {
+    if (playerPreferences != null) {
+      playerPreferences.save();
+    }
     getLogger().info("DoubleDoors disabled.");
   }
 
@@ -124,7 +119,8 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
       reloadConfig();
       pluginConfig.reload();
-      sender.sendMessage("DoubleDoors config reloaded.");
+      playerPreferences.load();
+      sender.sendMessage("DoubleDoors config and player preferences reloaded.");
       return true;
     }
 
@@ -139,7 +135,28 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
         return true;
       }
 
-      boolean enabled = toggleForPlayer(player);
+      // /doubledoors toggle [doors|gates|trapdoors]
+      if (args.length >= 2) {
+        UUID uuid = player.getUniqueId();
+        switch (args[1].toLowerCase()) {
+          case "doors" -> {
+            boolean next = playerPreferences.toggleDoors(uuid);
+            sender.sendMessage(next ? "Door linking enabled for you." : "Door linking disabled for you.");
+          }
+          case "gates" -> {
+            boolean next = playerPreferences.toggleFenceGates(uuid);
+            sender.sendMessage(next ? "Fence-gate linking enabled for you." : "Fence-gate linking disabled for you.");
+          }
+          case "trapdoors" -> {
+            boolean next = playerPreferences.toggleTrapdoors(uuid);
+            sender.sendMessage(next ? "Trapdoor linking enabled for you." : "Trapdoor linking disabled for you.");
+          }
+          default -> sender.sendMessage("Usage: /doubledoors toggle [doors|gates|trapdoors]");
+        }
+        return true;
+      }
+
+      boolean enabled = playerPreferences.toggleAll(player.getUniqueId());
       sender.sendMessage(enabled ? "DoubleDoors enabled for you." : "DoubleDoors disabled for you.");
       return true;
     }
@@ -158,7 +175,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return true;
     }
 
-    sender.sendMessage("Usage: /doubledoors <reload|toggle|server-toggle>");
+    sender.sendMessage("Usage: /doubledoors <reload|toggle [doors|gates|trapdoors]|server-toggle>");
     return true;
   }
 
@@ -170,14 +187,16 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     if (args.length == 1) {
-      if ("reload".startsWith(args[0].toLowerCase())) {
-        completions.add("reload");
+      for (String sub : List.of("reload", "toggle", "server-toggle")) {
+        if (sub.startsWith(args[0].toLowerCase())) {
+          completions.add(sub);
+        }
       }
-      if ("toggle".startsWith(args[0].toLowerCase())) {
-        completions.add("toggle");
-      }
-      if ("server-toggle".startsWith(args[0].toLowerCase())) {
-        completions.add("server-toggle");
+    } else if (args.length == 2 && args[0].equalsIgnoreCase("toggle")) {
+      for (String sub : List.of("doors", "gates", "trapdoors")) {
+        if (sub.startsWith(args[1].toLowerCase())) {
+          completions.add(sub);
+        }
       }
     }
     return completions;

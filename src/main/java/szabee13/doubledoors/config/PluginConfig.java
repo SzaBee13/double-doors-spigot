@@ -13,6 +13,7 @@ public final class PluginConfig {
   private boolean enableDoors;
   private boolean enableFenceGates;
   private boolean enableTrapdoors;
+  private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
 
   /**
@@ -41,6 +42,7 @@ public final class PluginConfig {
     enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
     enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
     enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
+    enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
   }
 
@@ -87,6 +89,15 @@ public final class PluginConfig {
    */
   public boolean isEnableTrapdoors() {
     return enableTrapdoors;
+  }
+
+  /**
+   * Gets whether villager-triggered linked-door behavior is enabled.
+   *
+   * @return true when villager linked-door behavior is enabled
+   */
+  public boolean isEnableVillagerLinkedDoors() {
+    return enableVillagerLinkedDoors;
   }
 
   /**

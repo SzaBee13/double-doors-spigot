@@ -13,5 +13,8 @@ enableFenceGates: true
 # Whether double trapdoors are enabled
 enableTrapdoors: true
 
+# Whether villagers trigger linked-door behavior (open/close partner doors when pathfinding)
+enableVillagerLinkedDoors: true
+
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true

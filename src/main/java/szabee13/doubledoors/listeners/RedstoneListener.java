@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -26,6 +25,16 @@ import org.bukkit.event.entity.EntityInteractEvent;
  * Handles redstone and villager-triggered door interactions.
  */
 public final class RedstoneListener implements Listener {
+  /** Ticks to wait before reading door state after a redstone change (vanilla needs 1 tick). */
+  private static final long REDSTONE_DELAY_TICKS = 1L;
+  /**
+   * Ticks to wait before reading door state after a villager interaction.
+   *
+   * <p>Villager door AI runs asynchronously to the interaction event; using 2 ticks ensures
+   * the block data has settled by the time we read and mirror it.</p>
+   */
+  private static final long VILLAGER_DELAY_TICKS = 2L;
+
   private final DoubleDoors plugin;
 
   /**
@@ -60,7 +69,7 @@ public final class RedstoneListener implements Listener {
     Block source = event.getBlock();
 
     Set<Block> candidates = new HashSet<>();
-    if (isEnabledType(source.getType(), config)) {
+    if (DoorInteractListener.isEnabledType(source.getType(), config)) {
       candidates.add(source);
     }
 
@@ -72,18 +81,21 @@ public final class RedstoneListener implements Listener {
       }
 
       Block neighbor = source.getRelative(face);
-      if (isEnabledType(neighbor.getType(), config)) {
+      if (DoorInteractListener.isEnabledType(neighbor.getType(), config)) {
         candidates.add(neighbor);
       }
     }
 
     for (Block candidate : candidates) {
-      applyConnectedState(candidate, config, true);
+      applyConnectedState(candidate, config, true, REDSTONE_DELAY_TICKS);
     }
   }
 
   /**
    * Handles villager interactions with supported door-like blocks.
+   *
+   * <p>Uses a 2-tick scheduling delay so the block state has fully settled after the
+   * villager's pathfinding AI updates the door before we mirror it to the partner.</p>
    *
    * @param event the entity interaction event
    */
@@ -96,18 +108,21 @@ public final class RedstoneListener implements Listener {
 
     Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
-    if (!config.isServerWideEnabled()) {
+    if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
       return;
     }
 
-    applyConnectedState(block, config, false);
+    applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
   }
 
   /**
-   * Handles villager block changes for supported door-like blocks.
+   * Handles block-data changes caused by villagers (e.g. closing a door after pathfinding through).
+   *
+   * <p>This catches close events that are not reported as {@link EntityInteractEvent},
+   * ensuring the partner block is kept in sync in both directions.</p>
    *
    * @param event the entity change block event
    */
@@ -120,17 +135,17 @@ public final class RedstoneListener implements Listener {
 
     Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
-    if (!config.isServerWideEnabled()) {
+    if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
       return;
     }
 
-    applyConnectedState(block, config, false);
+    applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
   }
 
-  private void applyConnectedState(Block origin, PluginConfig config, boolean requireOriginStateChange) {
+  private void applyConnectedState(Block origin, PluginConfig config, boolean requireOriginStateChange, long delayTicks) {
     if (!config.isEnableRecursiveOpening()) {
       return;
     }
@@ -141,8 +156,8 @@ public final class RedstoneListener implements Listener {
     }
     boolean beforeState = beforeOpenable.isOpen();
 
-    // Read and mirror state next tick so we sync to vanilla's final result.
-    plugin.getServer().getScheduler().runTask(plugin, () -> {
+    // Read and mirror state after the configured delay so we sync to vanilla's final result.
+    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;
@@ -198,20 +213,6 @@ public final class RedstoneListener implements Listener {
         linked.setOpen(openState);
         block.setBlockData(linked, false);
       }
-    });
-  }
-
-  private boolean isEnabledType(Material material, PluginConfig config) {
-    String name = material.name();
-    if (name.endsWith("_DOOR")) {
-      return config.isEnableDoors();
-    }
-    if (name.endsWith("_FENCE_GATE")) {
-      return config.isEnableFenceGates();
-    }
-    if (name.endsWith("_TRAPDOOR")) {
-      return config.isEnableTrapdoors();
-    }
-    return false;
+    }, delayTicks);
   }
 }

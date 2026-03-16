@@ -1,6 +1,7 @@
 package szabee13.doubledoors.listeners;
 
 import szabee13.doubledoors.DoubleDoors;
+import szabee13.doubledoors.config.PlayerPreferences;
 import szabee13.doubledoors.config.PluginConfig;
 import szabee13.doubledoors.util.DoorUtil;
 import java.util.HashMap;
@@ -74,7 +75,7 @@ public final class DoorInteractListener implements Listener {
     if (player.isSneaking()) {
       return;
     }
-    if (!isEnabledType(clicked.getType(), config)) {
+    if (!isEnabledTypeForPlayer(clicked.getType(), config, plugin.getPlayerPreferences(), player.getUniqueId())) {
       return;
     }
     if (isDuplicateInteraction(player, clicked)) {
@@ -146,7 +147,22 @@ public final class DoorInteractListener implements Listener {
     });
   }
 
-  private boolean isEnabledType(Material material, PluginConfig config) {
+  private boolean isEnabledTypeForPlayer(Material material, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
+    String name = material.name();
+    if (name.endsWith("_DOOR")) {
+      return config.isEnableDoors() && prefs.isDoorsEnabled(playerId);
+    }
+    if (name.endsWith("_FENCE_GATE")) {
+      return config.isEnableFenceGates() && prefs.isFenceGatesEnabled(playerId);
+    }
+    if (name.endsWith("_TRAPDOOR")) {
+      return config.isEnableTrapdoors() && prefs.isTrapdoorsEnabled(playerId);
+    }
+    return false;
+  }  
+
+  // Kept for code paths that do not involve a specific player (e.g. redstone / villager)
+  static boolean isEnabledType(Material material, PluginConfig config) {
     String name = material.name();
     if (name.endsWith("_DOOR")) {
       return config.isEnableDoors();

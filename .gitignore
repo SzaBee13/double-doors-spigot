@@ -20,3 +20,7 @@ releases/
 # WIKI
 wiki/ 
 # its a separate repo but just in case
+
+# Testing
+tests/
+coverage/

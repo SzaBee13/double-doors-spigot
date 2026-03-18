@@ -3,6 +3,7 @@ package szabee13.doubledoors;
 import szabee13.doubledoors.config.ClaimSettings;
 import szabee13.doubledoors.config.PlayerPreferences;
 import szabee13.doubledoors.config.PluginConfig;
+import szabee13.doubledoors.i18n.TranslationManager;
 import szabee13.doubledoors.listeners.DoorInteractListener;
 import szabee13.doubledoors.listeners.RedstoneListener;
 import szabee13.doubledoors.util.DoorUtil;
@@ -26,6 +27,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
   private ClaimSettings claimSettings;
+  private TranslationManager translationManager;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -55,6 +57,15 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   }
 
   /**
+   * Gets the translation manager.
+   *
+   * @return the active translation manager
+   */
+  public TranslationManager getTranslationManager() {
+    return translationManager;
+  }
+
+  /**
    * Checks whether the player can interact with a linked door block according to
    * active protection plugins.
    *
@@ -80,6 +91,8 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+    translationManager = new TranslationManager(this, pluginConfig);
+    translationManager.reload();
     playerPreferences = new PlayerPreferences(this);
     claimSettings = new ClaimSettings(this);
 
@@ -93,16 +106,16 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
     PluginManager pluginManager = getServer().getPluginManager();
     if (pluginManager.isPluginEnabled("LuckPerms")) {
-      getLogger().info("LuckPerms detected: permissions handled via doubledoors.* nodes.");
+      getLogger().info(t("log.luckperms_detected"));
     }
     if (pluginManager.isPluginEnabled("GriefPrevention")) {
-      getLogger().info("GriefPrevention detected: linked door opens will respect claim build checks.");
+      getLogger().info(t("log.griefprevention_detected"));
     }
     if (pluginManager.isPluginEnabled("Geyser-Spigot") || pluginManager.isPluginEnabled("floodgate")) {
-      getLogger().info("Geyser/Floodgate detected: duplicate interaction debounce is active.");
+      getLogger().info(t("log.geyser_detected"));
     }
 
-    getLogger().info("DoubleDoors enabled.");
+    getLogger().info(t("log.enabled"));
   }
 
   @Override
@@ -110,7 +123,14 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     if (playerPreferences != null) {
       playerPreferences.save();
     }
-    getLogger().info("DoubleDoors disabled.");
+    getLogger().info(t("log.disabled"));
+  }
+
+  private String t(String key, Object... args) {
+    if (translationManager == null) {
+      return key;
+    }
+    return translationManager.tr(key, args);
   }
 
   @Override
@@ -120,32 +140,33 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     if (args.length == 0) {
-      sender.sendMessage("Usage: /" + label + " <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>");
+      sender.sendMessage(t("cmd.usage.main", label));
       return true;
     }
 
     if (args[0].equalsIgnoreCase("reload")) {
       if (!sender.hasPermission("doubledoors.reload")) {
-        sender.sendMessage("You do not have permission to use this command.");
+        sender.sendMessage(t("cmd.no_permission"));
         return true;
       }
 
       reloadConfig();
       pluginConfig.reload();
+      translationManager.reload();
       playerPreferences.load();
       claimSettings.load();
-      sender.sendMessage("DoubleDoors config and player preferences reloaded.");
+      sender.sendMessage(t("cmd.reload.success", translationManager.getActiveLanguage()));
       return true;
     }
 
     if (args[0].equalsIgnoreCase("toggle")) {
       if (!(sender instanceof Player player)) {
-        sender.sendMessage("Only players can use /doubledoors toggle.");
+        sender.sendMessage(t("cmd.only_players.toggle", label));
         return true;
       }
 
       if (!sender.hasPermission("doubledoors.toggle")) {
-        sender.sendMessage("You do not have permission to use this command.");
+        sender.sendMessage(t("cmd.no_permission"));
         return true;
       }
 
@@ -155,76 +176,76 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
         switch (args[1].toLowerCase()) {
           case "doors" -> {
             boolean next = playerPreferences.toggleDoors(uuid);
-            sender.sendMessage(next ? "Door linking enabled for you." : "Door linking disabled for you.");
+            sender.sendMessage(next ? t("cmd.toggle.doors.enabled") : t("cmd.toggle.doors.disabled"));
           }
           case "gates" -> {
             boolean next = playerPreferences.toggleFenceGates(uuid);
-            sender.sendMessage(next ? "Fence-gate linking enabled for you." : "Fence-gate linking disabled for you.");
+            sender.sendMessage(next ? t("cmd.toggle.gates.enabled") : t("cmd.toggle.gates.disabled"));
           }
           case "trapdoors" -> {
             boolean next = playerPreferences.toggleTrapdoors(uuid);
-            sender.sendMessage(next ? "Trapdoor linking enabled for you." : "Trapdoor linking disabled for you.");
+            sender.sendMessage(next ? t("cmd.toggle.trapdoors.enabled") : t("cmd.toggle.trapdoors.disabled"));
           }
-          default -> sender.sendMessage("Usage: /doubledoors toggle [doors|gates|trapdoors]");
+          default -> sender.sendMessage(t("cmd.usage.toggle", label));
         }
         return true;
       }
 
       boolean enabled = playerPreferences.toggleAll(player.getUniqueId());
-      sender.sendMessage(enabled ? "DoubleDoors enabled for you." : "DoubleDoors disabled for you.");
+      sender.sendMessage(enabled ? t("cmd.toggle.all.enabled") : t("cmd.toggle.all.disabled"));
       return true;
     }
 
     if (args[0].equalsIgnoreCase("server-toggle")) {
       if (!sender.hasPermission("doubledoors.server-toggle")) {
-        sender.sendMessage("You do not have permission to use this command.");
+        sender.sendMessage(t("cmd.no_permission"));
         return true;
       }
 
       boolean nextState = !pluginConfig.isServerWideEnabled();
       pluginConfig.setServerWideEnabled(nextState);
       sender.sendMessage(nextState
-          ? "DoubleDoors server-wide behavior enabled."
-          : "DoubleDoors server-wide behavior disabled.");
+          ? t("cmd.server_toggle.enabled")
+          : t("cmd.server_toggle.disabled"));
       return true;
     }
 
     if (args[0].equalsIgnoreCase("grief")) {
       if (!(sender instanceof Player player)) {
-        sender.sendMessage("Only players can use /" + label + " grief.");
+        sender.sendMessage(t("cmd.only_players.grief", label));
         return true;
       }
 
       if (!sender.hasPermission("doubledoors.grief")) {
-        sender.sendMessage("You do not have permission to use this command.");
+        sender.sendMessage(t("cmd.no_permission"));
         return true;
       }
 
       if (args.length < 2 || !args[1].equalsIgnoreCase("villagers")) {
-        sender.sendMessage("Usage: /" + label + " grief villagers");
+        sender.sendMessage(t("cmd.usage.grief", label));
         return true;
       }
 
       Block standingBlock = player.getLocation().getBlock();
       long claimId = ProtectionCompat.getClaimIdAt(this, standingBlock);
       if (claimId < 0) {
-        sender.sendMessage("You are not standing in a GriefPrevention claim, or GriefPrevention is not enabled.");
+        sender.sendMessage(t("cmd.grief.no_claim"));
         return true;
       }
 
       if (!ProtectionCompat.isClaimManagerAt(this, player, standingBlock)) {
-        sender.sendMessage("You do not have permission to manage this claim.");
+        sender.sendMessage(t("cmd.grief.no_manage_permission"));
         return true;
       }
 
       boolean blocked = claimSettings.toggleVillagersBlocked(claimId);
       sender.sendMessage(blocked
-          ? "Villager linked-door access blocked for this claim."
-          : "Villager linked-door access allowed for this claim.");
+          ? t("cmd.grief.villagers.blocked")
+          : t("cmd.grief.villagers.allowed"));
       return true;
     }
 
-    sender.sendMessage("Usage: /" + label + " <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>");
+    sender.sendMessage(t("cmd.usage.main", label));
     return true;
   }
 

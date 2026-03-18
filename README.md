@@ -20,6 +20,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - LuckPerms-friendly permission nodes
 - GriefPrevention compatibility check for linked-door claim access
 - Duplicate interaction debounce (helps packet duplication patterns seen with some Bedrock/Geyser flows)
+- Translation support via JSON language files (built-in + custom)
 
 ## Compatibility
 
@@ -60,7 +61,16 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - `enableDoors` (default: `true`)
 - `enableFenceGates` (default: `true`)
 - `enableTrapdoors` (default: `true`)
+- `enableVillagerLinkedDoors` (default: `true`)
 - `serverWideEnabled` (default: `true`)
+- `language` (default: `en_US`)
+
+Language files:
+
+- Built-in fallback file: `src/main/resources/lang/en_US.json`
+- Runtime custom language folder: `plugins/DoubleDoors/lang/`
+- Set active language with `language: <code>` in `config.yml` (example: `language: de_DE`)
+- Custom files are JSON objects of key/value strings and override built-in messages when present.
 
 ## Build
 

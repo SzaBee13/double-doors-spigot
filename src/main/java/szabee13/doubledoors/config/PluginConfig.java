@@ -15,6 +15,7 @@ public final class PluginConfig {
   private boolean enableTrapdoors;
   private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
+  private String language;
 
   /**
    * Creates and loads a plugin config wrapper.
@@ -44,6 +45,12 @@ public final class PluginConfig {
     enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+
+    String configuredLanguage = plugin.getConfig().getString("language", "en_US");
+    if (configuredLanguage == null || configuredLanguage.isBlank()) {
+      configuredLanguage = "en_US";
+    }
+    language = configuredLanguage.trim();
   }
 
   /**
@@ -107,6 +114,15 @@ public final class PluginConfig {
    */
   public boolean isServerWideEnabled() {
     return serverWideEnabled;
+  }
+
+  /**
+   * Gets the configured plugin language code.
+   *
+   * @return language code such as {@code en_US}
+   */
+  public String getLanguage() {
+    return language;
   }
 
   /**

@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.bukkit.GameEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -23,6 +24,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
+import org.bukkit.event.world.GenericGameEvent;
 
 /**
  * Handles redstone and villager-triggered door interactions.
@@ -109,18 +111,12 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    Block block = event.getBlock();
+    Block block = normalizeOriginBlock(event.getBlock());
     PluginConfig config = plugin.getPluginConfig();
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
     if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
-      return;
-    }
-
-    // Skip top-half doors; the bottom-half handler will sync both halves
-    BlockData blockData = block.getBlockData();
-    if (blockData instanceof Bisected bisected && bisected.getHalf() == Half.TOP) {
       return;
     }
 
@@ -147,7 +143,7 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    Block block = event.getBlock();
+    Block block = normalizeOriginBlock(event.getBlock());
     PluginConfig config = plugin.getPluginConfig();
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
@@ -156,9 +152,39 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    // Skip top-half doors; the bottom-half handler will sync both halves
-    BlockData blockData = block.getBlockData();
-    if (blockData instanceof Bisected bisected && bisected.getHalf() == Half.TOP) {
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
+      return;
+    }
+
+    applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
+  }
+
+  /**
+   * Handles game events to catch close actions natively from villagers.
+   *
+   * <p>Paper 1.21 no longer fires {@link EntityChangeBlockEvent} for villagers
+   * closing doors, but game events are still correctly emitted.</p>
+   *
+   * @param event the game event
+   */
+  @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+  public void onGenericGameEvent(GenericGameEvent event) {
+    if (event.getEvent() != GameEvent.BLOCK_CLOSE && event.getEvent() != GameEvent.BLOCK_OPEN) {
+      return;
+    }
+
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Villager)) {
+      return;
+    }
+
+    Block block = normalizeOriginBlock(event.getLocation().getBlock());
+    PluginConfig config = plugin.getPluginConfig();
+    if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
+      return;
+    }
+    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
       return;
     }
 
@@ -246,5 +272,19 @@ public final class RedstoneListener implements Listener {
         block.setBlockData(linked, false);
       }
     }, delayTicks);
+  }
+
+  private Block normalizeOriginBlock(Block block) {
+    BlockData blockData = block.getBlockData();
+    if (!(blockData instanceof Bisected bisected) || bisected.getHalf() != Half.TOP) {
+      return block;
+    }
+
+    Block lower = block.getRelative(BlockFace.DOWN);
+    if (!(lower.getBlockData() instanceof Door lowerDoor)) {
+      return block;
+    }
+
+    return lowerDoor.getHalf() == Half.BOTTOM ? lower : block;
   }
 }

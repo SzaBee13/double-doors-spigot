@@ -80,3 +80,5 @@ Step-by-step guide for adding a new block category (e.g. `_SHUTTER`):
 5. If the new type is two-tall (like `Door`), add its own `findMirroredPartner` helper in `DoorUtil`.
 6. In `RedstoneListener.applyConnectedState`, check `originData instanceof <NewBlockDataType>` before falling through to BFS.
 7. Bump the version and write a release note.
+
+**Translation note:** When you add a new message key (e.g., `cmd.toggle.shutters.enabled`), update **only** `defaults.json` and `en_US.json`. Do not add it to other regional locales unless the user explicitly asks. Other locales will fall back to the English US text.

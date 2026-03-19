@@ -1,0 +1,31 @@
+{ 
+  "credits": [
+    "SzaBee13"
+  ],
+  "log.luckperms_detected": "LuckPerms észlelve: a jogosultságok a doubledoors.* csomópontokon keresztül vannak kezelve.",
+  "log.griefprevention_detected": "GriefPrevention észlelve: csatlakoztattot ajtók mostatntól tisztelve lesznek a területeken.",
+  "log.geyser_detected": "Geyser/Floodgate észlelve: dupla interakciók elkerülése aktív.",
+  "log.enabled": "DoubleDoors engedélyezve.",
+  "log.disabled": "DoubleDoors letiltva.",
+  "cmd.usage.main": "Használat: /%s <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>",
+  "cmd.no_permission": "Nincs jogosultságod a parancs használatára.",
+  "cmd.reload.success": "DoubleDoors konfiguráció, preferenciák, és  nyelvek újratöltve (active: %s).",
+  "cmd.only_players.toggle": "Csak játékosok használhatják a /%s toggle parancsot",
+  "cmd.toggle.doors.enabled": "Ajtó összekapcsolás engedélyezve neked.",
+  "cmd.toggle.doors.disabled": "Ajtó összekapcsolás letiltva neked.",
+  "cmd.toggle.gates.enabled": "Kapu összekapcsolás engedélyezve neked.",
+  "cmd.toggle.gates.disabled": "Kapu összekapcsolás letiltva neked.",
+  "cmd.toggle.trapdoors.enabled": "Csapóajtó összekapcsolás engedélyezve neked.",
+  "cmd.toggle.trapdoors.disabled": "Csapóajtó összekapcsolás letiltva neked.",
+  "cmd.usage.toggle": "Használat: /%s toggle [doors|gates|trapdoors]",
+  "cmd.toggle.all.enabled": "DoubleDoors engedélyezve neked.",
+  "cmd.toggle.all.disabled": "DoubleDoors letiltva neked.",
+  "cmd.server_toggle.enabled": "DoubleDoors szerver-szintű viselkedés engedélyezve.",
+  "cmd.server_toggle.disabled": "DoubleDoors szerver-szintű viselkedés letiltva.",
+  "cmd.only_players.grief": "Csak játékosok használhatják a /%s grief parancsot.",
+  "cmd.usage.grief": "Használat: /%s grief villagers",
+  "cmd.grief.no_claim": "Nem állsz egy GriefPrevention területen, vagy a GriefPrevention nincs engedélyezve.",
+  "cmd.grief.no_manage_permission": "Nincs jogosultságod a terület kezelésére.",
+  "cmd.grief.villagers.blocked": "A falusiak hozzáférése a csatlakoztatott ajtókhoz blokkolva van ezen a területen.",
+  "cmd.grief.villagers.allowed": "A falusiak hozzáférése a csatlakoztatott ajtókhoz engedélyezve van ezen a területen."
+}

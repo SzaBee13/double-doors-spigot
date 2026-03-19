@@ -1,0 +1,86 @@
+name: Translation request
+description: Suggest a new language translation or improvements to an existing one.
+title: "[Translation]: "
+labels:
+  - translation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve translations for DoubleDoors.
+        Please fill out the details below so maintainers can review quickly.
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: Request type
+      description: What kind of translation issue is this?
+      options:
+        - New language
+        - Improve existing language
+        - Fix typo/grammar
+        - Missing key(s)
+    validations:
+      required: true
+
+  - type: input
+    id: language_name
+    attributes:
+      label: Language name
+      placeholder: e.g., German
+    validations:
+      required: true
+
+  - type: input
+    id: locale_code
+    attributes:
+      label: Locale code
+      description: Use standard locale format if possible.
+      placeholder: e.g., de_DE
+    validations:
+      required: true
+
+  - type: textarea
+    id: affected_keys
+    attributes:
+      label: Affected key(s)
+      description: List the config/message keys impacted, if known.
+      placeholder: |
+        command.reload.success
+        config.enable-linked-doors
+    validations:
+      required: false
+
+  - type: textarea
+    id: current_text
+    attributes:
+      label: Current text
+      description: Paste current text if this is a fix/update.
+    validations:
+      required: false
+
+  - type: textarea
+    id: proposed_translation
+    attributes:
+      label: Proposed translation
+      description: Provide the exact translation text to use.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context / notes
+      description: Add usage context, screenshots, or rationale.
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: I verified placeholders and formatting codes are preserved (e.g., %s, {0}, color codes).
+          required: true
+        - label: I confirm this translation can be distributed with the project.
+          required: true

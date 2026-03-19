@@ -47,6 +47,12 @@ The shaded JAR is produced at `target/doubledoors-<version>.jar`.
 `RedstoneListener` listens to both `EntityInteractEvent` (open direction) and `EntityChangeBlockEvent` (close direction).  
 Both are guarded by `config.isEnableVillagerLinkedDoors()`.
 
+## Localization
+
+**Translation files are only updated for `en_US` by default.** When adding new message keys or modifying existing ones, update only `src/main/resources/lang/defaults.json` and `src/main/resources/lang/english/en_US.json`.  
+Other regional locales (en_GB, fr_FR, de_DE, etc.) will inherit the English US text as a fallback until someone explicitly requests localization support.  
+If the user asks to localize a new feature to other languages, then propagate the changes across all regional variants.
+
 ## Testing
 There are no automated unit tests; test manually on a local Paper 1.21 server.  
 Typical test scenarios: double doors, double fence gates, double trapdoors, redstone coupling, villager pathfinding, GriefPrevention claim boundary.

@@ -46,6 +46,7 @@ Current labels used by this repository:
 - `duplicate`
 - `good first issue`
 - `question`
+- `translation`
 
 ## Testing Expectations
 

@@ -1,0 +1,31 @@
+{
+	"credits": [
+		"SzaBee13"
+	],
+	"log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
+	"log.griefprevention_detected": "GriefPrevention detected: linked door opens will respect claim build checks.",
+	"log.geyser_detected": "Geyser/Floodgate detected: duplicate interaction debounce is active.",
+	"log.enabled": "DoubleDoors enabled.",
+	"log.disabled": "DoubleDoors disabled.",
+	"cmd.usage.main": "Usage: /%s <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>",
+	"cmd.no_permission": "You do not have permission to use this command.",
+	"cmd.reload.success": "DoubleDoors config, preferences, and language reloaded (active: %s).",
+	"cmd.only_players.toggle": "Only players can use /%s toggle.",
+	"cmd.toggle.doors.enabled": "Door linking enabled for you.",
+	"cmd.toggle.doors.disabled": "Door linking disabled for you.",
+	"cmd.toggle.gates.enabled": "Fence-gate linking enabled for you.",
+	"cmd.toggle.gates.disabled": "Fence-gate linking disabled for you.",
+	"cmd.toggle.trapdoors.enabled": "Trapdoor linking enabled for you.",
+	"cmd.toggle.trapdoors.disabled": "Trapdoor linking disabled for you.",
+	"cmd.usage.toggle": "Usage: /%s toggle [doors|gates|trapdoors]",
+	"cmd.toggle.all.enabled": "DoubleDoors enabled for you.",
+	"cmd.toggle.all.disabled": "DoubleDoors disabled for you.",
+	"cmd.server_toggle.enabled": "DoubleDoors server-wide behavior enabled.",
+	"cmd.server_toggle.disabled": "DoubleDoors server-wide behavior disabled.",
+	"cmd.only_players.grief": "Only players can use /%s grief.",
+	"cmd.usage.grief": "Usage: /%s grief villagers",
+	"cmd.grief.no_claim": "You are not standing in a GriefPrevention claim, or GriefPrevention is not enabled.",
+	"cmd.grief.no_manage_permission": "You do not have permission to manage this claim.",
+	"cmd.grief.villagers.blocked": "Villager linked-door access blocked for this claim.",
+	"cmd.grief.villagers.allowed": "Villager linked-door access allowed for this claim."
+}

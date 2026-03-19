@@ -19,7 +19,8 @@ enableVillagerLinkedDoors: true
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true
 
-# Active plugin language file (without extension).
-# Built-in default: lang/en_US.json
-# Custom translations can be placed in: plugins/DoubleDoors/lang/<language>.json
+# Active plugin language code.
+# You can use full codes (e.g. en_US, de_DE) or aliases (e.g. en -> en_US).
+# Built-in language files are loaded from subfolders under: lang/
+# Custom language files can be added to: plugins/DoubleDoors/lang/
 language: en_US

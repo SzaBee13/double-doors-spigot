@@ -1,4 +1,7 @@
-{
+{ 
+  "credits": [
+    "SzaBee13"
+  ],
   "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
   "log.griefprevention_detected": "GriefPrevention detected: linked door opens will respect claim build checks.",
   "log.geyser_detected": "Geyser/Floodgate detected: duplicate interaction debounce is active.",

@@ -57,17 +57,20 @@ jobs:
         run: |
           RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
           if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then
-            BODY=$(cat "$RELEASE_NOTE_FILE")
+            {
+              echo "body<<'EOF'"
+              cat "$RELEASE_NOTE_FILE"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           elif [ -n "${{ github.event.release.body }}" ]; then
-            BODY="${{ github.event.release.body }}"
+            {
+              echo "body<<'EOF'"
+              echo "${{ github.event.release.body }}"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
           else
-            BODY="Release ${{ github.event.release.tag_name }}"
+            echo "body=Release ${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
           fi
-          {
-            echo "body<<EOF"
-            echo "$BODY"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
 
       - name: Publish to GitHub Packages
         run: mvn deploy -s ${{ github.workspace }}/settings.xml -DskipTests

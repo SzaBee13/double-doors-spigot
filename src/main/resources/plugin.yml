@@ -1,7 +1,7 @@
 name: DoubleDoors
-version: 1.2.0
+version: 1.2.2
 main: me.szabee.doubledoors.DoubleDoors
-api-version: '1.21'
+api-version: '26.1'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
 softdepend: [LuckPerms, GriefPrevention, Geyser-Spigot, floodgate]

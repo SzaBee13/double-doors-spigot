@@ -100,3 +100,4 @@ jobs:
             26.1
           java: |
             25
+          game-version-filter: none

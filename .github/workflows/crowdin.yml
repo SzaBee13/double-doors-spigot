@@ -30,6 +30,7 @@ jobs:
       - name: Upload source strings to Crowdin
         uses: crowdin/github-action@v2
         with:
+          config: .crowdin.yml
           upload_sources: true
           upload_translations: false
           download_translations: false
@@ -48,6 +49,7 @@ jobs:
       - name: Download translated files from Crowdin
         uses: crowdin/github-action@v2
         with:
+          config: .crowdin.yml
           upload_sources: false
           upload_translations: false
           download_translations: true

@@ -5,6 +5,7 @@ Thank you for helping translate **DoubleDoors** for your language community.
 ## Crowdin workflow
 
 Translations are managed through Crowdin.
+The Crowdin project is available at: [Crowdin/double-doors-server](https://crowdin.com/project/double-doors-server)
 
 - Source language file: `bukkit/src/main/resources/lang/english/en_US.json`
 - Crowdin config: `.crowdin.yml`
@@ -19,7 +20,7 @@ Set these repository secrets before using the workflow:
 
 What the workflow does:
 
-- On push to `main`, uploads the latest source strings to Crowdin.
+- On push to `main`, uploads the latest source strings and imports existing repository translation files into Crowdin.
 - On schedule (weekly) or manual run, downloads translated files and opens a pull request.
 - Downloaded locales are normalized into this repository's language folder structure.
 

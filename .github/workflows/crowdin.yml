@@ -37,17 +37,57 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Stage existing translations for Crowdin upload
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p .crowdin
+
+          shopt -s nullglob
+
+          files=(
+            bukkit/src/main/resources/lang/english/*.json
+            bukkit/src/main/resources/lang/french/*.json
+            bukkit/src/main/resources/lang/german/*.json
+            bukkit/src/main/resources/lang/portuguese/*.json
+            bukkit/src/main/resources/lang/spanish/*.json
+            bukkit/src/main/resources/lang/hu_HU.json
+          )
+
+          for file in "${files[@]}"; do
+            locale="$(basename "${file}")"
+
+            case "${locale}" in
+              en_US.json|defaults.json)
+                continue
+                ;;
+              es_409.json)
+                # Crowdin commonly identifies Latin American Spanish as es_419.
+                cp "${file}" ".crowdin/es_419.json"
+                ;;
+              *)
+                cp "${file}" ".crowdin/${locale}"
+                ;;
+            esac
+          done
+
       - name: Upload source strings to Crowdin
         uses: crowdin/github-action@v2
         with:
           config: .crowdin.yml
           upload_sources: true
-          upload_translations: false
+          upload_translations: true
+          upload_translations_args: '--auto-approve-imported --import-eq-suggestions'
           download_translations: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - name: Cleanup staged translations
+        if: always()
+        run: rm -rf .crowdin
 
   download-translations:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'download' || github.event.inputs.mode == 'both'))
@@ -90,7 +130,7 @@ jobs:
               fr_*) target="bukkit/src/main/resources/lang/french/${locale}.json" ;;
               de_*) target="bukkit/src/main/resources/lang/german/${locale}.json" ;;
               pt_*) target="bukkit/src/main/resources/lang/portuguese/${locale}.json" ;;
-              es_419) target="bukkit/src/main/resources/lang/spanish/es_419.json" ;;
+              es_419) target="bukkit/src/main/resources/lang/spanish/es_409.json" ;;
               es_*) target="bukkit/src/main/resources/lang/spanish/${locale}.json" ;;
               hu_HU) target="bukkit/src/main/resources/lang/hu_HU.json" ;;
               *) target="bukkit/src/main/resources/lang/${locale}.json" ;;

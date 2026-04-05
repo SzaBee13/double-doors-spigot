@@ -41,6 +41,72 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - Plugin declares a soft-depend on `GriefPrevention`.
 - When present, linked-door interaction is checked against claim build permission before toggling the partner door.
 
+## Proxy Setup (Multi-Server)
+
+DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate environments with multiple backend servers.
+
+### Proxy Features
+
+- Shared SQL heartbeat/presence tracking across multiple proxies
+- Automatic detection of Geyser/Floodgate clients
+- Support for SQLite and MySQL databases
+- Connection pooling via HikariCP for efficient SQL resource usage
+
+### Proxy Installation
+
+1. Download the proxy JAR from the releases page (`doubledoors-proxy-<version>.jar`)
+2. Place it in your Velocity `plugins/` directory
+3. Restart the proxy
+4. A `plugins/DoubleDoors/proxy-config.properties` file will be generated
+
+### Proxy Configuration
+
+Edit `plugins/DoubleDoors/proxy-config.properties`:
+
+```properties
+# Enable SQL heartbeat reporting (requires Geyser/Floodgate on this proxy)
+sql.enabled=false
+
+# JDBC URL for the shared database
+# SQLite example: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+# MySQL example: jdbc:mysql://localhost:3306/doubledoors
+sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+
+# SQL authentication (leave blank for SQLite)
+sql.username=
+sql.password=
+
+# Unique proxy identifier (for multi-proxy setups)
+sql.proxyId=velocity-main
+
+# Heartbeat interval in seconds (minimum 5 seconds)
+sql.heartbeatSeconds=30
+```
+
+### Multi-Proxy Example
+
+For a setup with multiple Velocity proxies reporting to a shared MySQL database:
+
+**Proxy 1:**
+```properties
+sql.enabled=true
+sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
+sql.username=dd_user
+sql.password=dd_pass
+sql.proxyId=velocity-us
+sql.heartbeatSeconds=30
+```
+
+**Proxy 2:**
+```properties
+sql.enabled=true
+sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
+sql.username=dd_user
+sql.password=dd_pass
+sql.proxyId=velocity-eu
+sql.heartbeatSeconds=30
+```
+
 ## Commands
 
 - `/doubledoors reload` - reload config
@@ -78,7 +144,7 @@ Language files:
 
 Requirements:
 
-- Java 21
+- Java 25
 - Maven
 
 Build command:

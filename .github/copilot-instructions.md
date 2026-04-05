@@ -56,3 +56,11 @@ If the user asks to localize a new feature to other languages, then propagate th
 ## Testing
 There are no automated unit tests; test manually on a local Paper 1.21 server.  
 Typical test scenarios: double doors, double fence gates, double trapdoors, redstone coupling, villager pathfinding, GriefPrevention claim boundary.
+
+## Source control (Git)
+- Use feature branches for new features and bug fixes; merge to `main` when complete.
+- Write clear commit messages describing the change and motivation.
+- Avoid large, monolithic commits; break changes into logical steps when possible.
+- Use pull requests for code review and discussion before merging to `main`.
+- Regularly pull from `main` to keep branches up to date and resolve conflicts early.
+- Tag releases with semantic versioning (e.g., `v1.0.0`) and include release notes summarizing changes.

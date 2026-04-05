@@ -52,6 +52,25 @@ jobs:
           VERSION="${VERSION#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
+      - name: Detect release channel
+        id: release_channel
+        env:
+          TAG_NAME: ${{ github.event.release.tag_name }}
+          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+        run: |
+          TAG_LOWER="$(printf '%s' "$TAG_NAME" | tr '[:upper:]' '[:lower:]')"
+          VERSION_TYPE="release"
+
+          if [[ "$TAG_LOWER" == *"alpha"* ]]; then
+            VERSION_TYPE="alpha"
+          elif [[ "$TAG_LOWER" == *"beta"* ]]; then
+            VERSION_TYPE="beta"
+          elif [[ "$IS_PRERELEASE" == "true" ]]; then
+            VERSION_TYPE="beta"
+          fi
+
+          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+
       - name: Get release notes
         id: release_notes
         env:
@@ -84,12 +103,12 @@ jobs:
         with:
           modrinth-id: Fdj5mcgC
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: 1489404
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          # curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
+          # curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ steps.artifact.outputs.jar_path }}
           name: 'Double Doors Server ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
-          version-type: release
+          version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: ${{ steps.release_notes.outputs.body }}
           loaders: |
             bukkit
@@ -98,6 +117,25 @@ jobs:
             spigot
           game-versions: |
             26.1
+            26.1.1
+          java: |
+            25
+          game-version-filter: none
+      - name: Publish Proxy To Modrinth
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Fdj5mcgC
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: proxy/target/doubledoors-proxy-*.jar
+          name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
+          version: 'v${{ steps.version.outputs.version }}'
+          version-type: ${{ steps.release_channel.outputs.version_type }}
+          changelog: "Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below"
+          loaders: | 
+            velocity
+          game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
+            26.1
+            26.1.1
           java: |
             25
           game-version-filter: none

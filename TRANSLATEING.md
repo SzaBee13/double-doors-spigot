@@ -2,17 +2,34 @@
 
 Thank you for helping translate **DoubleDoors** for your language community.
 
+## Crowdin workflow
+
+Translations are managed through Crowdin.
+
+- Source language file: `bukkit/src/main/resources/lang/english/en_US.json`
+- Crowdin config: `.crowdin.yml`
+- GitHub workflow: `.github/workflows/crowdin.yml`
+
+### Maintainer setup
+
+Set these repository secrets before using the workflow:
+
+- `CROWDIN_PROJECT_ID`
+- `CROWDIN_PERSONAL_TOKEN`
+
+What the workflow does:
+
+- On push to `main`, uploads the latest source strings to Crowdin.
+- On schedule (weekly) or manual run, downloads translated files and opens a pull request.
+- Downloaded locales are normalized into this repository's language folder structure.
+
 ## How to contribute a translation
 
-1. Fork the repository.
-2. Create or update your language file in `src/main/resources/lang/`.
-   - Name must be the ISO 639-1 language code.json like en_US.json
-3. Keep all message keys *exactly* the same as the source language if possible.
-4. Translate only values (text shown to players).
-5. Open a Pull Request with:
-   - Language name
-   - Locale code
-   - What was translated (new language or updated existing one)
+1. Join the Crowdin project and submit translations there.
+2. Maintainers trigger or wait for the sync workflow to create a pull request.
+3. Review the generated pull request and merge it.
+
+If Crowdin is unavailable, direct pull requests with JSON translation changes are still accepted.
 
 ## Translation rules
 

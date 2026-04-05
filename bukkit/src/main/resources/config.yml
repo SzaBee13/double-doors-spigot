@@ -24,3 +24,23 @@ serverWideEnabled: true
 # Built-in language files are loaded from subfolders under: lang/
 # Custom language files can be added to: plugins/DoubleDoors/lang/
 language: en_US
+
+# Shared SQL storage configuration (Bukkit + proxy can use the same database).
+sql:
+  # If false, YAML files (players.yml, claims.yml) remain the active storage.
+  enabled: false
+
+  # Examples:
+  # sqlite: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+  # mysql: jdbc:mysql://127.0.0.1:3306/doubledoors
+  jdbcUrl: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+
+  # Leave empty for SQLite.
+  username: ""
+  password: ""
+
+  # Run a one-time import from existing YAML files into SQL.
+  migrateFromYaml: true
+
+  # Bukkit considers proxy heartbeats newer than this as "proxy online".
+  proxyHeartbeatMaxAgeSeconds: 180

@@ -26,4 +26,5 @@ permissions:
   doubledoors.grief:
     description: Allows toggling per-claim villager linked-door access
     default: true
-
+modrinth-project-id: "Fdj5mcgC"
+github-repo: "SzaBee13/double-doors-server"

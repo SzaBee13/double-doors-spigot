@@ -16,6 +16,12 @@ public final class PluginConfig {
   private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
   private String language;
+  private boolean sqlEnabled;
+  private String sqlJdbcUrl;
+  private String sqlUsername;
+  private String sqlPassword;
+  private boolean migrateYamlToSql;
+  private long proxyHeartbeatMaxAgeMillis;
 
   /**
    * Creates and loads a plugin config wrapper.
@@ -45,6 +51,26 @@ public final class PluginConfig {
     enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+
+    sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
+    sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
+    if (sqlJdbcUrl == null || sqlJdbcUrl.isBlank()) {
+      sqlJdbcUrl = "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db";
+    }
+    sqlUsername = plugin.getConfig().getString("sql.username", "");
+    if (sqlUsername == null) {
+      sqlUsername = "";
+    }
+    sqlPassword = plugin.getConfig().getString("sql.password", "");
+    if (sqlPassword == null) {
+      sqlPassword = "";
+    }
+    migrateYamlToSql = plugin.getConfig().getBoolean("sql.migrateFromYaml", true);
+    long heartbeatSeconds = plugin.getConfig().getLong("sql.proxyHeartbeatMaxAgeSeconds", 180L);
+    if (heartbeatSeconds < 15L) {
+      heartbeatSeconds = 15L;
+    }
+    proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
 
     String configuredLanguage = plugin.getConfig().getString("language", "en_US");
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
@@ -123,6 +149,60 @@ public final class PluginConfig {
    */
   public String getLanguage() {
     return language;
+  }
+
+  /**
+   * Gets whether SQL-backed storage is enabled.
+   *
+   * @return true when SQL storage should be used
+   */
+  public boolean isSqlEnabled() {
+    return sqlEnabled;
+  }
+
+  /**
+   * Gets the JDBC URL used by both Bukkit and proxy modules.
+   *
+   * @return JDBC URL
+   */
+  public String getSqlJdbcUrl() {
+    return sqlJdbcUrl;
+  }
+
+  /**
+   * Gets the SQL username.
+   *
+   * @return SQL username, or empty string
+   */
+  public String getSqlUsername() {
+    return sqlUsername;
+  }
+
+  /**
+   * Gets the SQL password.
+   *
+   * @return SQL password, or empty string
+   */
+  public String getSqlPassword() {
+    return sqlPassword;
+  }
+
+  /**
+   * Gets whether YAML data should be migrated to SQL on startup.
+   *
+   * @return true when one-time migration should run if needed
+   */
+  public boolean isMigrateYamlToSql() {
+    return migrateYamlToSql;
+  }
+
+  /**
+   * Gets the maximum accepted age for proxy heartbeats in milliseconds.
+   *
+   * @return heartbeat max age in milliseconds
+   */
+  public long getProxyHeartbeatMaxAgeMillis() {
+    return proxyHeartbeatMaxAgeMillis;
   }
 
   /**

@@ -1,0 +1,8 @@
+{
+  "id": "doubledoors-proxy",
+  "name": "DoubleDoorsProxy",
+  "version": "1.2.2",
+  "description": "Proxy companion plugin for DoubleDoors shared SQL detection",
+  "authors": ["SzaBee13"],
+  "main": "me.szabee.doubledoors.proxy.DoubleDoorsProxy"
+}

@@ -16,7 +16,8 @@ logs/
 *.log
 
 # Release Files
-releases/
+releases/*
+!releases/RELEASE-NOTE-EXAMPLE.md
 
 # WIKI
 wiki/ 

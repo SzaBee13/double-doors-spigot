@@ -1,0 +1,106 @@
+name: Crowdin Translation Sync
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - bukkit/src/main/resources/lang/english/en_US.json
+      - .crowdin.yml
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * 1'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: crowdin-sync
+  cancel-in-progress: false
+
+jobs:
+  upload-sources:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Upload source strings to Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: true
+          upload_translations: false
+          download_translations: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+  download-translations:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Download translated files from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          upload_sources: false
+          upload_translations: false
+          download_translations: true
+          skip_untranslated_strings: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
+
+      - name: Normalize translation file locations
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          files=(.crowdin/*.json)
+
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "No translated files were downloaded."
+            exit 0
+          fi
+
+          for file in "${files[@]}"; do
+            locale="$(basename "${file}" .json)"
+
+            case "${locale}" in
+              en_*) target="bukkit/src/main/resources/lang/english/${locale}.json" ;;
+              fr_*) target="bukkit/src/main/resources/lang/french/${locale}.json" ;;
+              de_*) target="bukkit/src/main/resources/lang/german/${locale}.json" ;;
+              pt_*) target="bukkit/src/main/resources/lang/portuguese/${locale}.json" ;;
+              es_419) target="bukkit/src/main/resources/lang/spanish/es_419.json" ;;
+              es_*) target="bukkit/src/main/resources/lang/spanish/${locale}.json" ;;
+              hu_HU) target="bukkit/src/main/resources/lang/hu_HU.json" ;;
+              *) target="bukkit/src/main/resources/lang/${locale}.json" ;;
+            esac
+
+            mkdir -p "$(dirname "${target}")"
+            cp "${file}" "${target}"
+            echo "Mapped ${file} -> ${target}"
+          done
+
+          rm -rf .crowdin
+
+      - name: Create pull request for translation updates
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: chore/crowdin-sync
+          delete-branch: true
+          commit-message: "chore(i18n): sync translations from Crowdin"
+          title: "chore(i18n): sync translations from Crowdin"
+          body: |
+            Automated translation sync from Crowdin.
+
+            This PR was created by the Crowdin workflow.
+          labels: |
+            translation

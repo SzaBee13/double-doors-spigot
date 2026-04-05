@@ -1,24 +1,29 @@
 package me.szabee.doubledoors;
 
-import me.szabee.doubledoors.config.ClaimSettings;
-import me.szabee.doubledoors.config.PlayerPreferences;
-import me.szabee.doubledoors.config.PluginConfig;
-import me.szabee.doubledoors.i18n.TranslationManager;
-import me.szabee.doubledoors.listeners.DoorInteractListener;
-import me.szabee.doubledoors.listeners.RedstoneListener;
-import me.szabee.doubledoors.util.DoorUtil;
-import me.szabee.doubledoors.util.ProtectionCompat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
+
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.szabee.doubledoors.config.ClaimSettings;
+import me.szabee.doubledoors.config.PlayerPreferences;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.i18n.TranslationManager;
+import me.szabee.doubledoors.listeners.DoorInteractListener;
+import me.szabee.doubledoors.listeners.RedstoneListener;
+import me.szabee.doubledoors.migration.YamlToSqlMigrator;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
+import me.szabee.doubledoors.util.ProtectionCompat;
 
 /**
  * Main plugin class for DoubleDoors.
@@ -28,6 +33,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   private PlayerPreferences playerPreferences;
   private ClaimSettings claimSettings;
   private TranslationManager translationManager;
+  private SharedSqlStorage sqlStorage;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -66,6 +72,15 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   }
 
   /**
+   * Gets the shared SQL storage (null when SQL mode is disabled).
+   *
+   * @return SQL storage or null
+   */
+  public SharedSqlStorage getSqlStorage() {
+    return sqlStorage;
+  }
+
+  /**
    * Checks whether the player can interact with a linked door block according to
    * active protection plugins.
    *
@@ -91,10 +106,12 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+    sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
     translationManager.reload();
     playerPreferences = new PlayerPreferences(this);
     claimSettings = new ClaimSettings(this);
+    initializeSqlIfEnabledAsync();
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
@@ -111,7 +128,14 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     if (pluginManager.isPluginEnabled("GriefPrevention")) {
       getLogger().info(t("log.griefprevention_detected"));
     }
-    if (pluginManager.isPluginEnabled("Geyser-Spigot") || pluginManager.isPluginEnabled("floodgate")) {
+    boolean hasLocalGeyserBridge = hasAnyPluginEnabled(pluginManager,
+        "Geyser-Spigot",
+        "Geyser",
+        "floodgate",
+        "floodgate-bukkit");
+    boolean hasProxyHeartbeat = sqlStorage != null
+      && sqlStorage.hasRecentProxyHeartbeat(pluginConfig.getProxyHeartbeatMaxAgeMillis());
+    if (hasLocalGeyserBridge || hasProxyHeartbeat) {
       getLogger().info(t("log.geyser_detected"));
     }
 
@@ -133,6 +157,47 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     return translationManager.tr(key, args);
   }
 
+  private static boolean hasAnyPluginEnabled(PluginManager pluginManager, String... pluginNames) {
+    for (Plugin plugin : pluginManager.getPlugins()) {
+      String installedName = plugin.getName();
+      for (String candidate : pluginNames) {
+        if (installedName.equalsIgnoreCase(candidate)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  private void initializeSqlIfEnabledAsync() {
+    sqlStorage = null;
+    if (!pluginConfig.isSqlEnabled()) {
+      return;
+    }
+
+    SharedSqlStorage storage = new SharedSqlStorage(this, pluginConfig);
+    getServer().getScheduler().runTaskAsynchronously(this, () -> {
+      try {
+        storage.initializeSchema();
+        if (pluginConfig.isMigrateYamlToSql()) {
+          YamlToSqlMigrator.migrateIfNeeded(this, storage);
+        }
+        getServer().getScheduler().runTask(this, () -> {
+          sqlStorage = storage;
+          playerPreferences = new PlayerPreferences(this);
+          claimSettings = new ClaimSettings(this);
+        });
+      } catch (RuntimeException e) {
+        getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
+        getServer().getScheduler().runTask(this, () -> {
+          sqlStorage = null;
+          playerPreferences = new PlayerPreferences(this);
+          claimSettings = new ClaimSettings(this);
+        });
+      }
+    });
+  }
+
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
@@ -152,9 +217,11 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
       reloadConfig();
       pluginConfig.reload();
+      sqlStorage = null;
+      playerPreferences = new PlayerPreferences(this);
+      claimSettings = new ClaimSettings(this);
+      initializeSqlIfEnabledAsync();
       translationManager.reload();
-      playerPreferences.load();
-      claimSettings.load();
       sender.sendMessage(t("cmd.reload.success", translationManager.getActiveLanguage()));
       return true;
     }

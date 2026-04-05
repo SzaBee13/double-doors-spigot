@@ -1,13 +1,10 @@
 package me.szabee.doubledoors.listeners;
 
-import me.szabee.doubledoors.DoubleDoors;
-import me.szabee.doubledoors.config.PlayerPreferences;
-import me.szabee.doubledoors.config.PluginConfig;
-import me.szabee.doubledoors.util.DoorUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -20,7 +17,13 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.EquipmentSlot;
+
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PlayerPreferences;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.util.DoorUtil;
 
 /**
  * Handles player interactions with doors, gates, and trapdoors.
@@ -83,6 +86,16 @@ public final class DoorInteractListener implements Listener {
     }
 
     applyConnectedState(player, clicked, config);
+  }
+
+  /**
+   * Cleans up debounce map entry when a player leaves to prevent memory leaks.
+   *
+   * @param event the player quit event
+   */
+  @EventHandler
+  public void onPlayerQuit(PlayerQuitEvent event) {
+    lastInteractionByPlayer.remove(event.getPlayer().getUniqueId());
   }
 
   private void applyConnectedState(Player player, Block origin, PluginConfig config) {

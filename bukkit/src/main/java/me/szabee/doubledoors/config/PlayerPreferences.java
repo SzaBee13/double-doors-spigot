@@ -5,8 +5,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
 import org.bukkit.configuration.file.YamlConfiguration;
+
 import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
@@ -18,6 +21,8 @@ public final class PlayerPreferences {
 
   private final DoubleDoors plugin;
   private final File dataFile;
+  private final SharedSqlStorage sqlStorage;
+  private final boolean useSql;
   private YamlConfiguration data;
   private final Map<UUID, PlayerPref> cache = new HashMap<>();
 
@@ -29,6 +34,8 @@ public final class PlayerPreferences {
   public PlayerPreferences(DoubleDoors plugin) {
     this.plugin = plugin;
     this.dataFile = new File(plugin.getDataFolder(), "players.yml");
+    this.sqlStorage = plugin.getSqlStorage();
+    this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
     load();
   }
 
@@ -36,6 +43,19 @@ public final class PlayerPreferences {
    * Reloads all preferences from disk, clearing the in-memory cache.
    */
   public void load() {
+    if (useSql) {
+      cache.clear();
+      for (Map.Entry<UUID, SharedSqlStorage.SqlPlayerPref> entry : sqlStorage.loadAllPlayerPreferences().entrySet()) {
+        SharedSqlStorage.SqlPlayerPref pref = entry.getValue();
+        cache.put(entry.getKey(), new PlayerPref(
+            pref.enabled(),
+            pref.enableDoors(),
+            pref.enableFenceGates(),
+            pref.enableTrapdoors()));
+      }
+      return;
+    }
+
     data = YamlConfiguration.loadConfiguration(dataFile);
     cache.clear();
     for (String key : data.getKeys(false)) {
@@ -64,6 +84,10 @@ public final class PlayerPreferences {
    * Saves all in-memory preferences synchronously to {@code players.yml}.
    */
   public void save() {
+    if (useSql) {
+      return;
+    }
+
     for (Map.Entry<UUID, PlayerPref> entry : cache.entrySet()) {
       String key = entry.getKey().toString();
       PlayerPref pref = entry.getValue();
@@ -75,13 +99,28 @@ public final class PlayerPreferences {
     try {
       data.save(dataFile);
     } catch (IOException e) {
-      plugin.getLogger().warning("Could not save players.yml: " + e.getMessage());
+      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
     }
   }
 
   /** Saves asynchronously; safe to call from the main thread after every mutation. */
-  private void saveAsync() {
-    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::save);
+  private void saveAsync(UUID changedUuid) {
+    if (useSql) {
+      PlayerPref pref = cache.get(changedUuid);
+      if (pref == null) {
+        return;
+      }
+      SharedSqlStorage.SqlPlayerPref snapshot = new SharedSqlStorage.SqlPlayerPref(
+          pref.enabled(),
+          pref.enableDoors(),
+          pref.enableFenceGates(),
+          pref.enableTrapdoors());
+      plugin.getServer().getScheduler().runTaskAsynchronously(plugin,
+          () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
+      return;
+    }
+
+    plugin.getServer().getScheduler().runTask(plugin, this::save);
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
@@ -118,7 +157,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enabled();
     cache.put(uuid, new PlayerPref(next, current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -132,7 +171,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableDoors();
     cache.put(uuid, new PlayerPref(current.enabled(), next, current.enableFenceGates(), current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -146,7 +185,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableFenceGates();
     cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), next, current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -160,7 +199,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableTrapdoors();
     cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), next));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 

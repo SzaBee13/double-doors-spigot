@@ -37,12 +37,39 @@ jobs:
       - name: Get JAR path
         id: artifact
         run: |
-          # Prefer the plugin output jar name, then fall back to the first regular jar.
-          JAR_PATH=$(find target -maxdepth 1 -name "doubledoors-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          # Prefer the Bukkit module shaded jar, then fall back to any non-classifier jar.
+          JAR_PATH=$(find bukkit/target -maxdepth 1 -name "doubledoors-bukkit-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
           if [ -z "$JAR_PATH" ]; then
-            JAR_PATH=$(find target -name "*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+            JAR_PATH=$(find bukkit/target -maxdepth 1 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
           fi
+          if [ -z "$JAR_PATH" ]; then
+            JAR_PATH=$(find target -maxdepth 2 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          fi
+
+          if [ -z "$JAR_PATH" ]; then
+            echo "Could not find a publishable Bukkit JAR." >&2
+            echo "Contents of bukkit/target:" >&2
+            ls -la bukkit/target >&2 || true
+            echo "Contents of target:" >&2
+            ls -la target >&2 || true
+            exit 1
+          fi
+
           echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+
+      - name: Get proxy JAR path
+        id: proxy_artifact
+        run: |
+          PROXY_JAR_PATH=$(find proxy/target -maxdepth 1 -name "doubledoors-proxy-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+
+          if [ -z "$PROXY_JAR_PATH" ]; then
+            echo "Could not find a publishable proxy JAR." >&2
+            echo "Contents of proxy/target:" >&2
+            ls -la proxy/target >&2 || true
+            exit 1
+          fi
+
+          echo "jar_path=$PROXY_JAR_PATH" >> $GITHUB_OUTPUT
 
       - name: Attach JAR to release
         uses: softprops/action-gh-release@v2
@@ -134,7 +161,7 @@ jobs:
         with:
           modrinth-id: Fdj5mcgC
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          files: proxy/target/doubledoors-proxy-*.jar
+          files: ${{ steps.proxy_artifact.outputs.jar_path }}
           name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}

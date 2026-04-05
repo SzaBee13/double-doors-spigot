@@ -8,6 +8,16 @@ on:
       - bukkit/src/main/resources/lang/english/en_US.json
       - .crowdin.yml
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Choose which Crowdin action to run"
+        required: true
+        default: both
+        type: choice
+        options:
+          - upload
+          - download
+          - both
   schedule:
     - cron: '0 4 * * 1'
 
@@ -21,7 +31,7 @@ concurrency:
 
 jobs:
   upload-sources:
-    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'upload' || github.event.inputs.mode == 'both'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -40,7 +50,7 @@ jobs:
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
 
   download-translations:
-    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'download' || github.event.inputs.mode == 'both'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

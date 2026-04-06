@@ -5,7 +5,7 @@
 
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.3.0</version>
+  <version>1.3.1</version>
   <name>DoubleDoors Parent</name>
   <packaging>pom</packaging>
 

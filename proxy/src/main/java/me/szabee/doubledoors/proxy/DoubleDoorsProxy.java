@@ -35,6 +35,7 @@ import dev.faststats.velocity.VelocityMetrics;
     authors = {"SzaBee13"}
 )
 public final class DoubleDoorsProxy {
+  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
   private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de-5e43-4289-8df6-16e9671697c9";
 
   private final ProxyServer proxyServer;
@@ -74,6 +75,12 @@ public final class DoubleDoorsProxy {
     Properties config = loadConfig();
     boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
     if (anonymousTrackingEnabled) {
+      String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+      if (token == null) {
+        metrics = null;
+        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled.");
+      }
+
       VelocityMetrics.Factory factory = metricsFactory;
       if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
         factory = factory
@@ -83,11 +90,13 @@ public final class DoubleDoorsProxy {
             .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
       }
 
-      try {
-        metrics = factory.token(FASTSTATS_PROJECT_TOKEN).create(this);
-      } catch (RuntimeException e) {
-        metrics = null;
-        logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+      if (token != null) {
+        try {
+          metrics = factory.token(token).create(this);
+        } catch (RuntimeException e) {
+          metrics = null;
+          logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+        }
       }
     } else {
       metrics = null;
@@ -212,6 +221,18 @@ public final class DoubleDoorsProxy {
         "cores=" + runtime.availableProcessors(),
         "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
     };
+  }
+
+  private String normalizeFastStatsToken(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      return null;
+    }
+
+    String normalized = rawToken.trim().toLowerCase().replace("-", "");
+    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
+      return null;
+    }
+    return normalized;
   }
 
   private Properties loadConfig() {

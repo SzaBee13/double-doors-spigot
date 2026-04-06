@@ -31,6 +31,7 @@ import me.szabee.doubledoors.util.ProtectionCompat;
  * Main plugin class for DoubleDoors.
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
+  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
   private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de-5e43-4289-8df6-16e9671697c9";
 
   private PluginConfig pluginConfig;
@@ -218,6 +219,13 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return;
     }
 
+    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+    if (token == null) {
+      metrics = null;
+      getLogger().warning("Anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled.");
+      return;
+    }
+
     BukkitMetrics.Factory factory = BukkitMetrics.factory();
     if (pluginConfig.isEnableExtendedAnonymousTracking()) {
       factory = factory
@@ -228,12 +236,24 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     try {
-      metrics = factory.token(FASTSTATS_PROJECT_TOKEN).create(this);
+      metrics = factory.token(token).create(this);
       metrics.ready();
     } catch (RuntimeException e) {
       metrics = null;
       getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
     }
+  }
+
+  private String normalizeFastStatsToken(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      return null;
+    }
+
+    String normalized = rawToken.trim().toLowerCase().replace("-", "");
+    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
+      return null;
+    }
+    return normalized;
   }
 
   private String[] getSystemStatistics() {

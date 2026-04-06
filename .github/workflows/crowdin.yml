@@ -146,7 +146,7 @@ jobs:
       - name: Create pull request for translation updates
         uses: peter-evans/create-pull-request@v8
         with:
-          branch: chore/crowdin-sync
+          branch: chore/crowdin-sync-{{ timestamp }}
           delete-branch: true
           commit-message: "chore(i18n): sync translations from Crowdin"
           title: "chore(i18n): sync translations from Crowdin"

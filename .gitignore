@@ -15,10 +15,6 @@ build/
 logs/
 *.log
 
-# Release Files
-releases/*
-!releases/RELEASE-NOTE-EXAMPLE.md
-
 # WIKI
 wiki/ 
 # its a separate repo but just in case

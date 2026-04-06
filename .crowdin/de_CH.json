@@ -1,0 +1,31 @@
+{
+  "credits": [
+    "SzaBee13"
+  ],
+  "log.luckperms_detected": "LuckPerms erkannt: Rechte werden ueber doubledoors.* Knoten gesteuert.",
+  "log.griefprevention_detected": "GriefPrevention erkannt: Verknuepfte Tueroeffnungen respektieren Baupruefungen in Claims.",
+  "log.geyser_detected": "Geyser/Floodgate erkannt: Entprellung fuer doppelte Interaktionen ist aktiv.",
+  "log.enabled": "DoubleDoors aktiviert.",
+  "log.disabled": "DoubleDoors deaktiviert.",
+  "cmd.usage.main": "Befehl: /%s <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>",
+  "cmd.no_permission": "Dir fehlt die Berechtigung fuer diesen Befehl.",
+  "cmd.reload.success": "DoubleDoors Konfiguration, Voreinstellungen und Sprache neu geladen (aktiv: %s).",
+  "cmd.only_players.toggle": "Nur Spielerinnen und Spieler koennen /%s toggle verwenden.",
+  "cmd.toggle.doors.enabled": "Tuer-Kopplung fuer dich eingeschaltet.",
+  "cmd.toggle.doors.disabled": "Tuer-Kopplung fuer dich ausgeschaltet.",
+  "cmd.toggle.gates.enabled": "Zauntor-Kopplung fuer dich eingeschaltet.",
+  "cmd.toggle.gates.disabled": "Zauntor-Kopplung fuer dich ausgeschaltet.",
+  "cmd.toggle.trapdoors.enabled": "Falltuer-Kopplung fuer dich eingeschaltet.",
+  "cmd.toggle.trapdoors.disabled": "Falltuer-Kopplung fuer dich ausgeschaltet.",
+  "cmd.usage.toggle": "Befehl: /%s toggle [doors|gates|trapdoors]",
+  "cmd.toggle.all.enabled": "DoubleDoors ist fuer dich eingeschaltet.",
+  "cmd.toggle.all.disabled": "DoubleDoors ist fuer dich ausgeschaltet.",
+  "cmd.server_toggle.enabled": "DoubleDoors ist serverweit eingeschaltet.",
+  "cmd.server_toggle.disabled": "DoubleDoors ist serverweit ausgeschaltet.",
+  "cmd.only_players.grief": "Nur Spielerinnen und Spieler koennen /%s grief verwenden.",
+  "cmd.usage.grief": "Befehl: /%s grief villagers",
+  "cmd.grief.no_claim": "Du befindest dich in keinem GriefPrevention-Claim oder GriefPrevention ist nicht aktiv.",
+  "cmd.grief.no_manage_permission": "Dir fehlt die Berechtigung, diesen Claim zu verwalten.",
+  "cmd.grief.villagers.blocked": "Verknuepfte Tuernutzung durch Dorfbewohner ist fuer diesen Claim gesperrt.",
+  "cmd.grief.villagers.allowed": "Verknuepfte Tuernutzung durch Dorfbewohner ist fuer diesen Claim freigegeben."
+}

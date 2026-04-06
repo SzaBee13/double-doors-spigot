@@ -1,0 +1,31 @@
+{
+  "credits": [
+    "SzaBee13"
+  ],
+  "log.luckperms_detected": "LuckPerms detetado: permissoes tratadas atraves dos nodes doubledoors.*.",
+  "log.griefprevention_detected": "GriefPrevention detetado: aberturas de portas ligadas vao respeitar verificacoes de construcao em claims.",
+  "log.geyser_detected": "Geyser/Floodgate detetado: debounce de interacao duplicada esta ativo.",
+  "log.enabled": "DoubleDoors ativado.",
+  "log.disabled": "DoubleDoors desativado.",
+  "cmd.usage.main": "Utilizacao: /%s <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>",
+  "cmd.no_permission": "Nao tens permissao para usar este comando.",
+  "cmd.reload.success": "Configuracao, preferencias e idioma do DoubleDoors recarregados (ativo: %s).",
+  "cmd.only_players.toggle": "Apenas jogadores podem usar /%s toggle.",
+  "cmd.toggle.doors.enabled": "Ligacao de portas ativada para ti.",
+  "cmd.toggle.doors.disabled": "Ligacao de portas desativada para ti.",
+  "cmd.toggle.gates.enabled": "Ligacao de portoes ativada para ti.",
+  "cmd.toggle.gates.disabled": "Ligacao de portoes desativada para ti.",
+  "cmd.toggle.trapdoors.enabled": "Ligacao de alcapoes ativada para ti.",
+  "cmd.toggle.trapdoors.disabled": "Ligacao de alcapoes desativada para ti.",
+  "cmd.usage.toggle": "Utilizacao: /%s toggle [doors|gates|trapdoors]",
+  "cmd.toggle.all.enabled": "DoubleDoors ativado para ti.",
+  "cmd.toggle.all.disabled": "DoubleDoors desativado para ti.",
+  "cmd.server_toggle.enabled": "Comportamento global do servidor para DoubleDoors ativado.",
+  "cmd.server_toggle.disabled": "Comportamento global do servidor para DoubleDoors desativado.",
+  "cmd.only_players.grief": "Apenas jogadores podem usar /%s grief.",
+  "cmd.usage.grief": "Utilizacao: /%s grief villagers",
+  "cmd.grief.no_claim": "Nao estas dentro de um claim do GriefPrevention, ou o GriefPrevention nao esta ativado.",
+  "cmd.grief.no_manage_permission": "Nao tens permissao para gerir este claim.",
+  "cmd.grief.villagers.blocked": "Acesso de aldeoes a portas ligadas bloqueado para este claim.",
+  "cmd.grief.villagers.allowed": "Acesso de aldeoes a portas ligadas permitido para este claim."
+}

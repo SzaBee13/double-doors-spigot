@@ -20,8 +20,7 @@ enableVillagerLinkedDoors: true
 serverWideEnabled: true
 
 # Enable anonymous FastStats tracking
-# Info we track is public usage data and can be viewed at: https://faststats.dev/double-doors-server
-enableAnonymousTracking: true
+# Info we track is public usage data and can be viewed at: https://faststats.dev/project/double-doors-server/minecraft-plugin
 
 # Enable additional anonymous telemetry like server location, countries, Java version, and system statistics.
 enableExtendedAnonymousTracking: false

@@ -20,8 +20,8 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
-import dev.faststats.core.data.Metric;
 import dev.faststats.core.Metrics;
+import dev.faststats.core.data.Metric;
 import dev.faststats.velocity.VelocityMetrics;
 
 /**

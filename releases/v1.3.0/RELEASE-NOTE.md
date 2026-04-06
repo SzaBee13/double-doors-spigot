@@ -53,8 +53,8 @@ Release date: 2026-04-05 (yyyy-mm-dd)
 ## Upgrade Guide
 
 1. Back up your current plugin jars and the `plugins/DoubleDoors` directory.
-2. Replace the old Bukkit jar with `doubledoors-bukkit-3.0.0.jar`.
-3. If you run Velocity and want proxy heartbeat detection, also deploy `doubledoors-proxy-3.0.0.jar`.
+2. Replace the old Bukkit jar with `doubledoors-bukkit-1.3.0.jar`.
+3. If you run Velocity and want proxy heartbeat detection, also deploy `doubledoors-proxy-1.3.0.jar`.
 4. Configure SQL in Bukkit `config.yml` (`sql.enabled=true` and matching JDBC settings).
 5. Configure proxy `config.properties` with the same SQL database if proxy heartbeat is desired.
 6. Keep `sql.migrateFromYaml=true` for first startup to import legacy YAML data.
@@ -63,8 +63,8 @@ Release date: 2026-04-05 (yyyy-mm-dd)
 
 ## Artifacts
 
-- Bukkit/Spigot/Paper/Purpur: `doubledoors-bukkit-3.0.0.jar`
-- Velocity proxy companion: `doubledoors-proxy-3.0.0.jar`
+- Bukkit/Spigot/Paper/Purpur: `doubledoors-bukkit-1.3.0.jar`
+- Velocity proxy companion: `doubledoors-proxy-1.3.0.jar`
 
 ## Notes
 

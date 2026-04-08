@@ -1,6 +1,6 @@
 # DoubleDoors v1.3.2 Release Notes
 
-Release date: 2026-04-06
+Release date: 2026-04-08
 
 ## Highlights
 

@@ -7,9 +7,7 @@ import java.util.logging.Level;
 
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -26,20 +24,21 @@ import me.szabee.doubledoors.listeners.RedstoneListener;
 import me.szabee.doubledoors.migration.YamlToSqlMigrator;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
 import me.szabee.doubledoors.util.ProtectionCompat;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Main plugin class for DoubleDoors.
  */
-public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
+public final class DoubleDoors extends JavaPlugin {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
   private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
 
-  private PluginConfig pluginConfig;
-  private PlayerPreferences playerPreferences;
-  private ClaimSettings claimSettings;
-  private TranslationManager translationManager;
-  private SharedSqlStorage sqlStorage;
-  private BukkitMetrics metrics;
+  private volatile PluginConfig pluginConfig;
+  private volatile PlayerPreferences playerPreferences;
+  private volatile ClaimSettings claimSettings;
+  private volatile TranslationManager translationManager;
+  private volatile SharedSqlStorage sqlStorage;
+  private volatile BukkitMetrics metrics;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -125,9 +124,10 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
 
-    if (getCommand("doubledoors") != null) {
-      getCommand("doubledoors").setExecutor(this);
-      getCommand("doubledoors").setTabCompleter(this);
+    var doubledoorsCommand = getCommand("doubledoors");
+    if (doubledoorsCommand != null) {
+      doubledoorsCommand.setExecutor(this);
+      doubledoorsCommand.setTabCompleter(this);
     }
 
     PluginManager pluginManager = getServer().getPluginManager();
@@ -197,20 +197,20 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     SharedSqlStorage storage = new SharedSqlStorage(this, pluginConfig);
-    getServer().getScheduler().runTaskAsynchronously(this, () -> {
+    SchedulerBridge.runAsync(this, () -> {
       try {
         storage.initializeSchema();
         if (pluginConfig.isMigrateYamlToSql()) {
           YamlToSqlMigrator.migrateIfNeeded(this, storage);
         }
-        getServer().getScheduler().runTask(this, () -> {
+        SchedulerBridge.runNextTick(this, () -> {
           sqlStorage = storage;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
         });
       } catch (RuntimeException e) {
         getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
-        getServer().getScheduler().runTask(this, () -> {
+        SchedulerBridge.runNextTick(this, () -> {
           sqlStorage = null;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
@@ -291,6 +291,10 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    java.util.Objects.requireNonNull(sender, "sender");
+    java.util.Objects.requireNonNull(command, "command");
+    java.util.Objects.requireNonNull(label, "label");
+    java.util.Objects.requireNonNull(args, "args");
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
       return false;
     }
@@ -385,7 +389,8 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
         return true;
       }
 
-      Block standingBlock = player.getLocation().getBlock();
+      var playerLocation = java.util.Objects.requireNonNull(player.getLocation(), "player location");
+      Block standingBlock = playerLocation.getBlock();
       long claimId = ProtectionCompat.getClaimIdAt(this, standingBlock);
       if (claimId < 0) {
         sender.sendMessage(t("cmd.grief.no_claim"));
@@ -410,6 +415,10 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
+    java.util.Objects.requireNonNull(sender, "sender");
+    java.util.Objects.requireNonNull(command, "command");
+    java.util.Objects.requireNonNull(alias, "alias");
+    java.util.Objects.requireNonNull(args, "args");
     List<String> completions = new ArrayList<>();
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
       return completions;

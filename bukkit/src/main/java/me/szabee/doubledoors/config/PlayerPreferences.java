@@ -2,14 +2,15 @@ package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
@@ -23,8 +24,7 @@ public final class PlayerPreferences {
   private final File dataFile;
   private final SharedSqlStorage sqlStorage;
   private final boolean useSql;
-  private YamlConfiguration data;
-  private final Map<UUID, PlayerPref> cache = new HashMap<>();
+  private final Map<UUID, PlayerPref> cache = new ConcurrentHashMap<>();
 
   /**
    * Loads player preferences from {@code players.yml}.
@@ -56,7 +56,7 @@ public final class PlayerPreferences {
       return;
     }
 
-    data = YamlConfiguration.loadConfiguration(dataFile);
+    YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
     cache.clear();
     for (String key : data.getKeys(false)) {
       // Fast path: skip obviously-invalid UUID formats before attempting UUID.fromString.
@@ -88,7 +88,8 @@ public final class PlayerPreferences {
       return;
     }
 
-    for (Map.Entry<UUID, PlayerPref> entry : cache.entrySet()) {
+    YamlConfiguration data = new YamlConfiguration();
+    for (Map.Entry<UUID, PlayerPref> entry : Map.copyOf(cache).entrySet()) {
       String key = entry.getKey().toString();
       PlayerPref pref = entry.getValue();
       data.set(key + ".enabled", pref.enabled());
@@ -115,12 +116,11 @@ public final class PlayerPreferences {
           pref.enableDoors(),
           pref.enableFenceGates(),
           pref.enableTrapdoors());
-      plugin.getServer().getScheduler().runTaskAsynchronously(plugin,
-          () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
+      SchedulerBridge.runAsync(plugin, () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
       return;
     }
 
-    plugin.getServer().getScheduler().runTask(plugin, this::save);
+    SchedulerBridge.runAsync(plugin, this::save);
   }
 
   private PlayerPref getOrDefault(UUID uuid) {

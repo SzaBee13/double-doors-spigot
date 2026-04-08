@@ -2,14 +2,15 @@ package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Manages per-GriefPrevention-claim settings, persisted to {@code claims.yml}.
@@ -22,7 +23,7 @@ public final class ClaimSettings {
   private final File dataFile;
   private final SharedSqlStorage sqlStorage;
   private final boolean useSql;
-  private final Set<Long> villagersBlockedClaims = new HashSet<>();
+  private final Set<Long> villagersBlockedClaims = ConcurrentHashMap.newKeySet();
 
   /**
    * Loads claim settings from {@code claims.yml}.
@@ -80,11 +81,11 @@ public final class ClaimSettings {
    * Saves asynchronously; safe to call from the main thread after every mutation.
    */
   public void saveAsync() {
-    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::save);
+    SchedulerBridge.runAsync(plugin, this::save);
   }
 
   private void saveAsync(long claimId, boolean blocked) {
-    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+    SchedulerBridge.runAsync(plugin, () -> {
       if (useSql) {
         sqlStorage.setVillagersBlocked(claimId, blocked);
         return;

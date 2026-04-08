@@ -4,7 +4,7 @@ Release date: YYYY-MM-DD
 
 ## Highlights
 
-- Add the 2-4 most important user-facing changes in plain language.
+- Add the 2-4 most important user-facing changes in plain language, that is useful for the user not the developers.
 - Mention new features, major improvements, and important compatibility updates.
 
 ## Added
@@ -14,7 +14,7 @@ Release date: YYYY-MM-DD
 
 ## Changed
 
-- Behavioral/configuration changes that users should know about.
+- Behavioral/configuration changes that users should know about, like added something in the config.
 - Performance or architecture improvements.
 
 ## Fixed

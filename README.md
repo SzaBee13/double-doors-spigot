@@ -42,6 +42,10 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - Plugin declares a soft-depend on `GriefPrevention`.
 - When present, linked-door interaction is checked against claim build permission before toggling the partner door.
 
+### Folia
+
+- Folia is supported with region-aware scheduling for delayed block updates and shared-state access.
+
 ## Proxy Setup (Multi-Server)
 
 DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate environments with multiple backend servers.

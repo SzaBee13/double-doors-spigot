@@ -5,6 +5,7 @@ api-version: '26.1'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
 softdepend: [LuckPerms, GriefPrevention, Geyser-Spigot, floodgate]
+folia-supported: true
 commands:
   doubledoors:
     description: Main DoubleDoors command

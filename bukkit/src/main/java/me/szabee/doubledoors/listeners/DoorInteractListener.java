@@ -1,9 +1,9 @@
 package me.szabee.doubledoors.listeners;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -24,6 +24,7 @@ import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Handles player interactions with doors, gates, and trapdoors.
@@ -32,7 +33,7 @@ public final class DoorInteractListener implements Listener {
   private static final long DUPLICATE_INTERACTION_WINDOW_NANOS = 80_000_000L;
 
   private final DoubleDoors plugin;
-  private final Map<UUID, InteractionStamp> lastInteractionByPlayer = new HashMap<>();
+  private final ConcurrentMap<UUID, InteractionStamp> lastInteractionByPlayer = new ConcurrentHashMap<>();
 
   /**
    * Creates a new interaction listener.
@@ -109,7 +110,7 @@ public final class DoorInteractListener implements Listener {
     // Schedule for the next tick so we read the state AFTER vanilla has processed the
     // click. Reading it here (at MONITOR) would give the pre-click state on Paper 1.21,
     // causing the partner/connected blocks to be set to the wrong state.
-    plugin.getServer().getScheduler().runTask(plugin, () -> {
+    SchedulerBridge.runNextTick(plugin, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;

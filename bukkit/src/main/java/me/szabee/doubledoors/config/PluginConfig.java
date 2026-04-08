@@ -1,35 +1,17 @@
 package me.szabee.doubledoors.config;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Configuration wrapper for DoubleDoors.
  */
 public final class PluginConfig {
   private final DoubleDoors plugin;
-
-  private boolean enableRecursiveOpening;
-  private int recursiveOpeningMaxBlocksDistance;
-  private boolean enableDoors;
-  private boolean enableFenceGates;
-  private boolean enableTrapdoors;
-  private boolean enableVillagerLinkedDoors;
-  private boolean serverWideEnabled;
-  private boolean enableAnonymousTracking;
-  private boolean enableExtendedAnonymousTracking;
-  private List<String> trackingCountries;
-  private String trackingServerLocation;
-  private String language;
-  private boolean sqlEnabled;
-  private String sqlJdbcUrl;
-  private String sqlUsername;
-  private String sqlPassword;
-  private boolean migrateYamlToSql;
-  private long proxyHeartbeatMaxAgeMillis;
+  private volatile ConfigSnapshot snapshot = ConfigSnapshot.defaults();
 
   /**
    * Creates and loads a plugin config wrapper.
@@ -45,8 +27,8 @@ public final class PluginConfig {
    * Reloads config values from config.yml.
    */
   public void reload() {
-    enableRecursiveOpening = plugin.getConfig().getBoolean("enableRecursiveOpening", true);
-    recursiveOpeningMaxBlocksDistance = plugin.getConfig().getInt("recursiveOpeningMaxBlocksDistance", 10);
+    boolean enableRecursiveOpening = plugin.getConfig().getBoolean("enableRecursiveOpening", true);
+    int recursiveOpeningMaxBlocksDistance = plugin.getConfig().getInt("recursiveOpeningMaxBlocksDistance", 10);
     if (recursiveOpeningMaxBlocksDistance < 1) {
       recursiveOpeningMaxBlocksDistance = 1;
     }
@@ -54,53 +36,73 @@ public final class PluginConfig {
       recursiveOpeningMaxBlocksDistance = 32;
     }
 
-    enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
-    enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
-    enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
-    enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
-    serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
-    enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
-    enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
+    boolean enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
+    boolean enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
+    boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
+    boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
+    boolean serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+    boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
+    boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
 
     List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
-    trackingCountries = new ArrayList<>();
+    List<String> trackingCountries = new ArrayList<>();
     for (String country : configuredCountries) {
       if (country != null && !country.isBlank()) {
         trackingCountries.add(country.trim());
       }
     }
 
-    trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
+    String trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
     if (trackingServerLocation == null) {
       trackingServerLocation = "";
     }
     trackingServerLocation = trackingServerLocation.trim();
 
-    sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
-    sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
+    boolean sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
+    String sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
     if (sqlJdbcUrl == null || sqlJdbcUrl.isBlank()) {
       sqlJdbcUrl = "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db";
     }
-    sqlUsername = plugin.getConfig().getString("sql.username", "");
+    String sqlUsername = plugin.getConfig().getString("sql.username", "");
     if (sqlUsername == null) {
       sqlUsername = "";
     }
-    sqlPassword = plugin.getConfig().getString("sql.password", "");
+    String sqlPassword = plugin.getConfig().getString("sql.password", "");
     if (sqlPassword == null) {
       sqlPassword = "";
     }
-    migrateYamlToSql = plugin.getConfig().getBoolean("sql.migrateFromYaml", true);
+    boolean migrateYamlToSql = plugin.getConfig().getBoolean("sql.migrateFromYaml", true);
     long heartbeatSeconds = plugin.getConfig().getLong("sql.proxyHeartbeatMaxAgeSeconds", 180L);
     if (heartbeatSeconds < 15L) {
       heartbeatSeconds = 15L;
     }
-    proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
+    long proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
 
     String configuredLanguage = plugin.getConfig().getString("language", "en_US");
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
     }
-    language = configuredLanguage.trim();
+    String language = configuredLanguage.trim();
+
+    snapshot = new ConfigSnapshot(
+        enableRecursiveOpening,
+        recursiveOpeningMaxBlocksDistance,
+        enableDoors,
+        enableFenceGates,
+        enableTrapdoors,
+        enableVillagerLinkedDoors,
+        serverWideEnabled,
+        enableAnonymousTracking,
+        enableExtendedAnonymousTracking,
+        List.copyOf(trackingCountries),
+        trackingServerLocation,
+        language,
+        sqlEnabled,
+        sqlJdbcUrl,
+        sqlUsername,
+        sqlPassword,
+        migrateYamlToSql,
+        proxyHeartbeatMaxAgeMillis);
   }
 
   /**
@@ -109,7 +111,7 @@ public final class PluginConfig {
    * @return true when recursive opening is enabled
    */
   public boolean isEnableRecursiveOpening() {
-    return enableRecursiveOpening;
+    return snapshot.enableRecursiveOpening();
   }
 
   /**
@@ -118,7 +120,7 @@ public final class PluginConfig {
    * @return max recursive distance between 1 and 32
    */
   public int getRecursiveOpeningMaxBlocksDistance() {
-    return recursiveOpeningMaxBlocksDistance;
+    return snapshot.recursiveOpeningMaxBlocksDistance();
   }
 
   /**
@@ -127,7 +129,7 @@ public final class PluginConfig {
    * @return true when door support is enabled
    */
   public boolean isEnableDoors() {
-    return enableDoors;
+    return snapshot.enableDoors();
   }
 
   /**
@@ -136,7 +138,7 @@ public final class PluginConfig {
    * @return true when fence gate support is enabled
    */
   public boolean isEnableFenceGates() {
-    return enableFenceGates;
+    return snapshot.enableFenceGates();
   }
 
   /**
@@ -145,7 +147,7 @@ public final class PluginConfig {
    * @return true when trapdoor support is enabled
    */
   public boolean isEnableTrapdoors() {
-    return enableTrapdoors;
+    return snapshot.enableTrapdoors();
   }
 
   /**
@@ -154,7 +156,7 @@ public final class PluginConfig {
    * @return true when villager linked-door behavior is enabled
    */
   public boolean isEnableVillagerLinkedDoors() {
-    return enableVillagerLinkedDoors;
+    return snapshot.enableVillagerLinkedDoors();
   }
 
   /**
@@ -163,7 +165,7 @@ public final class PluginConfig {
    * @return true when server-wide behavior is enabled
    */
   public boolean isServerWideEnabled() {
-    return serverWideEnabled;
+    return snapshot.serverWideEnabled();
   }
 
   /**
@@ -172,7 +174,7 @@ public final class PluginConfig {
    * @return true when FastStats tracking is enabled
    */
   public boolean isEnableAnonymousTracking() {
-    return enableAnonymousTracking;
+    return snapshot.enableAnonymousTracking();
   }
 
   /**
@@ -181,7 +183,7 @@ public final class PluginConfig {
    * @return true when extra telemetry should be sent
    */
   public boolean isEnableExtendedAnonymousTracking() {
-    return enableExtendedAnonymousTracking;
+    return snapshot.enableExtendedAnonymousTracking();
   }
 
   /**
@@ -190,7 +192,7 @@ public final class PluginConfig {
    * @return immutable list of configured country codes
    */
   public List<String> getTrackingCountries() {
-    return Collections.unmodifiableList(trackingCountries);
+    return snapshot.trackingCountries();
   }
 
   /**
@@ -199,7 +201,7 @@ public final class PluginConfig {
    * @return trimmed location label, or empty string
    */
   public String getTrackingServerLocation() {
-    return trackingServerLocation;
+    return snapshot.trackingServerLocation();
   }
 
   /**
@@ -208,7 +210,7 @@ public final class PluginConfig {
    * @return language code such as {@code en_US}
    */
   public String getLanguage() {
-    return language;
+    return snapshot.language();
   }
 
   /**
@@ -217,7 +219,7 @@ public final class PluginConfig {
    * @return true when SQL storage should be used
    */
   public boolean isSqlEnabled() {
-    return sqlEnabled;
+    return snapshot.sqlEnabled();
   }
 
   /**
@@ -226,7 +228,7 @@ public final class PluginConfig {
    * @return JDBC URL
    */
   public String getSqlJdbcUrl() {
-    return sqlJdbcUrl;
+    return snapshot.sqlJdbcUrl();
   }
 
   /**
@@ -235,7 +237,7 @@ public final class PluginConfig {
    * @return SQL username, or empty string
    */
   public String getSqlUsername() {
-    return sqlUsername;
+    return snapshot.sqlUsername();
   }
 
   /**
@@ -244,7 +246,7 @@ public final class PluginConfig {
    * @return SQL password, or empty string
    */
   public String getSqlPassword() {
-    return sqlPassword;
+    return snapshot.sqlPassword();
   }
 
   /**
@@ -253,7 +255,7 @@ public final class PluginConfig {
    * @return true when one-time migration should run if needed
    */
   public boolean isMigrateYamlToSql() {
-    return migrateYamlToSql;
+    return snapshot.migrateYamlToSql();
   }
 
   /**
@@ -262,7 +264,7 @@ public final class PluginConfig {
    * @return heartbeat max age in milliseconds
    */
   public long getProxyHeartbeatMaxAgeMillis() {
-    return proxyHeartbeatMaxAgeMillis;
+    return snapshot.proxyHeartbeatMaxAgeMillis();
   }
 
   /**
@@ -271,9 +273,74 @@ public final class PluginConfig {
    * @param enabled true to enable globally, false to disable globally
    */
   public void setServerWideEnabled(boolean enabled) {
-    serverWideEnabled = enabled;
+    snapshot = snapshot.withServerWideEnabled(enabled);
     plugin.getConfig().set("serverWideEnabled", enabled);
-    plugin.saveConfig();
+    SchedulerBridge.runAsync(plugin, plugin::saveConfig);
+  }
+
+  private record ConfigSnapshot(
+      boolean enableRecursiveOpening,
+      int recursiveOpeningMaxBlocksDistance,
+      boolean enableDoors,
+      boolean enableFenceGates,
+      boolean enableTrapdoors,
+      boolean enableVillagerLinkedDoors,
+      boolean serverWideEnabled,
+      boolean enableAnonymousTracking,
+      boolean enableExtendedAnonymousTracking,
+      List<String> trackingCountries,
+      String trackingServerLocation,
+      String language,
+      boolean sqlEnabled,
+      String sqlJdbcUrl,
+      String sqlUsername,
+      String sqlPassword,
+      boolean migrateYamlToSql,
+      long proxyHeartbeatMaxAgeMillis
+  ) {
+    private static ConfigSnapshot defaults() {
+      return new ConfigSnapshot(
+          true,
+          10,
+          true,
+          true,
+          true,
+          true,
+          true,
+          true,
+          false,
+          List.of(),
+          "",
+          "en_US",
+          false,
+          "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db",
+          "",
+          "",
+          true,
+          180_000L);
+    }
+
+    private ConfigSnapshot withServerWideEnabled(boolean enabled) {
+      return new ConfigSnapshot(
+          enableRecursiveOpening,
+          recursiveOpeningMaxBlocksDistance,
+          enableDoors,
+          enableFenceGates,
+          enableTrapdoors,
+          enableVillagerLinkedDoors,
+          enabled,
+          enableAnonymousTracking,
+          enableExtendedAnonymousTracking,
+          trackingCountries,
+          trackingServerLocation,
+          language,
+          sqlEnabled,
+          sqlJdbcUrl,
+          sqlUsername,
+          sqlPassword,
+          migrateYamlToSql,
+          proxyHeartbeatMaxAgeMillis);
+    }
   }
 }
 

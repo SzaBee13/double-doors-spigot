@@ -5,15 +5,14 @@ Release date: 2026-04-08
 ## Highlights
 
 - Added FastStats metrics integration on both Bukkit and Velocity components.
-- Added configurable anonymous tracking switches on both Bukkit and Velocity.
-- Added extended anonymous tracking for server location, countries, Java version, and system statistics.
-- Introduced telemetry lifecycle handling with graceful fail-open behavior.
+- Added Folia support for improved performance and compatibility on modern Minecraft server versions.
 
 ## Added
 
 - Added FastStats
 - Added `enableAnonymousTracking` to Bukkit `config.yml` and proxy `proxy-config.properties`.
 - Added `enableExtendedAnonymousTracking`, `trackingCountries`, and `trackingServerLocation` config keys.
+- Added region-aware scheduling and shared-state access for Folia support.
 
 ## Changed
 

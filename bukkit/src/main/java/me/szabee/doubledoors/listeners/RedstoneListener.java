@@ -1,13 +1,10 @@
 package me.szabee.doubledoors.listeners;
 
-import me.szabee.doubledoors.DoubleDoors;
-import me.szabee.doubledoors.config.PluginConfig;
-import me.szabee.doubledoors.util.DoorUtil;
-import me.szabee.doubledoors.util.ProtectionCompat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
 import org.bukkit.GameEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -25,6 +22,12 @@ import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.world.GenericGameEvent;
+
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.ProtectionCompat;
+import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Handles redstone and villager-triggered door interactions.
@@ -208,7 +211,7 @@ public final class RedstoneListener implements Listener {
     boolean beforeState = beforeOpenable.isOpen();
 
     // Read and mirror state after the configured delay so we sync to vanilla's final result.
-    plugin.getServer().getScheduler().runTaskLater(plugin, () -> {
+    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), delayTicks, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;
@@ -271,7 +274,7 @@ public final class RedstoneListener implements Listener {
         linked.setOpen(openState);
         block.setBlockData(linked, false);
       }
-    }, delayTicks);
+    });
   }
 
   private Block normalizeOriginBlock(Block block) {

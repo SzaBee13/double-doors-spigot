@@ -36,7 +36,7 @@ import dev.faststats.velocity.VelocityMetrics;
 )
 public final class DoubleDoorsProxy {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
-  private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de5e4342898df616e9671697c9"; // Technically project id (in uuid4 format without dashes), but treated as token by FastStats
+  private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
 
   private final ProxyServer proxyServer;
   private final Logger logger;

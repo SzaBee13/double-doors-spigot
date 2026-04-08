@@ -19,18 +19,12 @@ Release date: 2026-04-06
 
 ## Changed
 
-- Updated Maven parent and module versions to `1.3.2`.
-- Updated Bukkit plugin descriptor version to `1.3.2`.
-- Updated proxy plugin descriptor version to `1.3.2`.
-- Updated Velocity `@Plugin` annotation version to `1.3.2`.
+- Updated plugin metadata to reflect new version and features.
+- Updated documentation to include FastStats integration and configuration instructions.
 
 ## Fixed
 
 - Corrected internal proxy plugin annotation metadata that previously reported an outdated version.
-
-## Breaking Changes
-
-- None.
 
 ## Upgrade Guide
 

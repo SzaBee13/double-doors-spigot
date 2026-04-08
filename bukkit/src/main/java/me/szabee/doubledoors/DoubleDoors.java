@@ -219,10 +219,14 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return;
     }
 
-    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+    String tokenSource = pluginConfig.getFastStatsToken().isBlank()
+        ? FASTSTATS_PROJECT_TOKEN
+        : pluginConfig.getFastStatsToken();
+    String token = normalizeFastStatsToken(tokenSource);
     if (token == null) {
       metrics = null;
-      getLogger().warning("Anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled.");
+      getLogger().warning("Anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled."
+          + " Please set fastStatsToken in config.yml.");
       return;
     }
 

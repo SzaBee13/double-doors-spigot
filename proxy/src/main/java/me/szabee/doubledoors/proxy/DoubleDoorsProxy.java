@@ -75,10 +75,13 @@ public final class DoubleDoorsProxy {
     Properties config = loadConfig();
     boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
     if (anonymousTrackingEnabled) {
-      String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+      String configuredToken = getConfigValue(config, "fastStatsToken");
+      String tokenSource = configuredToken.isBlank() ? FASTSTATS_PROJECT_TOKEN : configuredToken;
+      String token = normalizeFastStatsToken(tokenSource);
       if (token == null) {
         metrics = null;
-        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled.");
+        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but FastStats token is invalid;"
+            + " metrics are disabled. Please set fastStatsToken in proxy config.");
       }
 
       VelocityMetrics.Factory factory = metricsFactory;

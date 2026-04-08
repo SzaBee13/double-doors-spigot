@@ -88,8 +88,15 @@
                 <filter>
                   <artifact>*:*</artifact>
                   <excludes>
+                    <exclude>module-info.class</exclude>
                     <exclude>META-INF/MANIFEST.MF</exclude>
                     <exclude>META-INF/versions/**/module-info.class</exclude>
+                  </excludes>
+                </filter>
+                <filter>
+                  <artifact>dev.faststats.metrics:core</artifact>
+                  <excludes>
+                    <exclude>META-INF/faststats.properties</exclude>
                   </excludes>
                 </filter>
               </filters>

@@ -21,6 +21,12 @@ serverWideEnabled: true
 
 # Enable anonymous FastStats tracking
 # Info we track is public usage data and can be viewed at: https://faststats.dev/project/double-doors-server/minecraft-plugin
+enableAnonymousTracking: true
+
+# FastStats token from your project settings (32 lowercase hex characters).
+# Example: 0123456789abcdef0123456789abcdef
+# Leave empty to use the built-in fallback token.
+fastStatsToken: ""
 
 # Enable additional anonymous telemetry like server location, countries, Java version, and system statistics.
 enableExtendedAnonymousTracking: false

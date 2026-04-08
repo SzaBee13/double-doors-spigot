@@ -20,6 +20,7 @@ public final class PluginConfig {
   private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
   private boolean enableAnonymousTracking;
+  private String fastStatsToken;
   private boolean enableExtendedAnonymousTracking;
   private List<String> trackingCountries;
   private String trackingServerLocation;
@@ -60,6 +61,11 @@ public final class PluginConfig {
     enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
     enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
+    fastStatsToken = plugin.getConfig().getString("fastStatsToken", "");
+    if (fastStatsToken == null) {
+      fastStatsToken = "";
+    }
+    fastStatsToken = fastStatsToken.trim();
     enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
 
     List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
@@ -173,6 +179,15 @@ public final class PluginConfig {
    */
   public boolean isEnableAnonymousTracking() {
     return enableAnonymousTracking;
+  }
+
+  /**
+   * Gets the configured FastStats token.
+   *
+   * @return token value, or empty string
+   */
+  public String getFastStatsToken() {
+    return fastStatsToken;
   }
 
   /**

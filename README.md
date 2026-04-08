@@ -145,7 +145,7 @@ Language files:
 
 Requirements:
 
-- Java 25
+- Java 21
 - Maven
 
 Build command:

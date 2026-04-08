@@ -11,9 +11,7 @@ Release date: 2026-04-08
 
 ## Added
 
-- Added FastStats SDK dependency for Bukkit (`dev.faststats.metrics:bukkit:0.21.0`).
-- Added FastStats SDK dependency for Velocity (`dev.faststats.metrics:velocity:0.21.0`).
-- Added FastStats repository (`https://repo.faststats.dev/releases`) to both module builds.
+- Added FastStats
 - Added `enableAnonymousTracking` to Bukkit `config.yml` and proxy `proxy-config.properties`.
 - Added `enableExtendedAnonymousTracking`, `trackingCountries`, and `trackingServerLocation` config keys.
 
